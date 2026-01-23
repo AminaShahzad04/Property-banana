@@ -1,8 +1,8 @@
-// Merchant API Service
-// This file handles all merchant-related API calls
+// Landlord API Service
+// This file handles all landlord-related API calls
 
-export const merchantService = {
-  // Get merchant dashboard stats
+export const landlordService = {
+  // Get landlord dashboard stats
   async getDashboardStats() {
     // TODO: Implement API call
     return {
@@ -19,7 +19,7 @@ export const merchantService = {
     return { success: true };
   },
 
-  // Get merchant's properties
+  // Get landlord's properties
   async getProperties() {
     // TODO: Implement API call
     return [];

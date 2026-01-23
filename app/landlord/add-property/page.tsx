@@ -1,6 +1,6 @@
 "use client";
 
-import AddPropertyForm from "@/components/merchant/add-property-form";
+import AddPropertyForm from "@/components/landlord/add-property-form";
 import Link from "next/link";
 
 export default function AddPropertyPage() {
@@ -10,7 +10,7 @@ export default function AddPropertyPage() {
         {/* Header */}
         <div className="border-b border-gray-200 px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/merchant/dashboard" className="text-2xl">
+            <Link href="/landlord/dashboard" className="text-2xl">
               ←
             </Link>
             <h1 className="text-2xl font-bold">Add Property</h1>
