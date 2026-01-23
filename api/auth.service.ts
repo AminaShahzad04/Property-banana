@@ -19,7 +19,7 @@ export const authService = {
    * No need to call this as a fetch - use window.location.href
    */
   getLoginUrl(): string {
-    return `${API_BASE_URL}/auth/cognito/login`;
+    return `${API_BASE_URL}/api/auth/cognito/login`;
   },
 
   /**
@@ -27,7 +27,7 @@ export const authService = {
    * No need to call this as a fetch - use window.location.href
    */
   getLogoutUrl(): string {
-    return `${API_BASE_URL}/auth/cognito/logout`;
+    return `${API_BASE_URL}/api/auth/cognito/logout`;
   },
 
   /**
@@ -35,7 +35,7 @@ export const authService = {
    * Returns user data if authenticated, null otherwise
    */
   async checkAuthStatus(): Promise<AuthStatusResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/cognito/status`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/cognito/status`, {
       credentials: "include", // REQUIRED: Send session cookies
     });
 
@@ -51,7 +51,7 @@ export const authService = {
    * Returns 401 if not authenticated
    */
   async getProfile(): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/auth/cognito/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/cognito/profile`, {
       credentials: "include", // REQUIRED: Send session cookies
     });
 
