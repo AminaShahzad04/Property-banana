@@ -32,7 +32,7 @@ export function SignUpForm() {
       return;
     }
     // Redirect to AWS Cognito login (Cognito handles sign up as well)
-    window.location.href = `${API_BASE_URL}/api/auth/cognito/login`;
+    window.location.href = `${API_BASE_URL}/api/cognito/login`;
   };
 
   return (

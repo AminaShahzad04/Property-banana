@@ -22,7 +22,7 @@ export function SignInForm() {
 
   const handleSignIn = () => {
     // Redirect to AWS Cognito login
-    window.location.href = `${API_BASE_URL}/api/auth/cognito/login`;
+    window.location.href = `${API_BASE_URL}/api/cognito/login`;
   };
 
   return (
