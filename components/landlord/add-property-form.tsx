@@ -15,27 +15,11 @@ interface StepIconProps {
 const StepIcon = ({ icon, label, isActive, isCompleted }: StepIconProps) => (
   <div className="flex flex-col items-center gap-2">
     <div
-      className={`w-16 h-16 rounded-lg flex items-center justify-center transition-all ${
-        isActive
-          ? "bg-teal-50 border-2 border-teal-500"
-          : isCompleted
-            ? "bg-green-50 border-2 border-green-500"
-            : "bg-gray-50 border border-gray-200"
-      }`}
+      className={`w-16 h-16 rounded-lg flex items-center justify-center transition-all `}
     >
-      <img src={icon} alt={label} className="w-8 h-8 object-contain" />
+      <img src={icon} alt={label} className="w-16 h-16 object-contain" />
     </div>
-    <span
-      className={`text-xs font-medium ${
-        isActive
-          ? "text-teal-600"
-          : isCompleted
-            ? "text-green-600"
-            : "text-gray-500"
-      }`}
-    >
-      {label}
-    </span>
+    <span className="text-xs font-medium text-black">{label}</span>
   </div>
 );
 
@@ -115,7 +99,7 @@ export default function AddPropertyForm() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const steps = [
-    { id: 1, icon: "/verify-search.png", label: "Verify Search" },
+    { id: 1, icon: "/approve.png", label: "Verify Search" },
     { id: 2, icon: "/file.png", label: "Upload Document" },
     { id: 3, icon: "/property-papers.png", label: "Add Property Detail" },
     { id: 4, icon: "/image-upload.png", label: "Upload Image" },
@@ -182,15 +166,42 @@ export default function AddPropertyForm() {
       </div>
 
       {/* Step Icons */}
-      <div className="flex justify-between items-start pb-4">
-        {steps.map((step) => (
-          <StepIcon
-            key={step.id}
-            icon={step.icon}
-            label={step.label}
-            isActive={currentStep === step.id}
-            isCompleted={currentStep > step.id}
-          />
+      {/* Step Indicators */}
+      <div className="flex items-end justify-center mb-8 gap-1">
+        {steps.map((step, index) => (
+          <div key={step.id} className="flex items-end">
+            <div className="flex flex-col items-center">
+              <div className="relative flex items-end justify-center h-[70px] w-[70px]">
+                <img
+                  src={step.icon}
+                  alt={step.label}
+                  width={70}
+                  height={70}
+                  className="object-contain h-[70px] w-[70px]"
+                  style={{ display: "block" }}
+                />
+              </div>
+              <span
+                className={`text-xs font-semibold  text-center max-w-[100px] ${
+                  index + 1 <= currentStep ? "text-gray-900" : "text-gray-400"
+                }`}
+              >
+                {step.label}
+              </span>
+            </div>
+            {index < steps.length - 1 && (
+              <div className="flex items-end mb-6">
+                <img
+                  src="/arrow.svg"
+                  alt="Arrow"
+                  className={`object-contain w-[320px] h-[80px] aspect-[4/1] ${
+                    index + 1 < currentStep ? "" : "grayscale opacity-40"
+                  } ${(index + 1) % 2 === 0 ? "rotate-180 scale-x-[-1]" : ""}`}
+                  style={{ display: "block" }}
+                />
+              </div>
+            )}
+          </div>
         ))}
       </div>
 

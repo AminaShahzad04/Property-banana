@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex" style={{ backgroundColor: "#F9F9F9" }}>
         <Sidebar />
-        <main className="flex-1 ">{children}</main>
+        <main className="flex-1  m-8">{children}</main>
       </div>
     </div>
   );

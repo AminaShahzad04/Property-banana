@@ -1,26 +1,95 @@
-import { Button } from "@/components/ui/Button";
-import { Compass, Calendar, House, CircleUser, LogOut } from "lucide-react";
+"use client";
 
-const menuItems = [
-  { icon: Compass, label: "Dashboard", href: "/Dash/dashboard" },
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import {
+  Compass,
+  Calendar,
+  House,
+  CircleUser,
+  Users,
+  KeyRound,
+  Gavel,
+} from "lucide-react";
+
+// Tenant sidebar items
+const tenantMenuItems = [
+  { icon: Compass, label: "Dashboard", href: "/Dash/tenant" },
   { icon: Calendar, label: "Calendar", href: "#" },
 ];
 
-const manageListings = [
-  {
-    icon: House,
-    label: "My Offers",
-    href: "#",
-    variant: "default" as const,
-  },
+const tenantManageListings = [{ icon: House, label: "My Offers", href: "#" }];
+
+const tenantManageAccount = [
+  { icon: CircleUser, label: "My Profile", href: "#" },
 ];
 
-const manageAccount = [
+// Landlord sidebar items
+const landlordMenuItems = [
+  { icon: Compass, label: "Dashboard", href: "/Dash/landlord" },
+  { icon: Calendar, label: "Calendar", href: "#" },
+];
+
+const landlordManageListings = [
+  { icon: House, label: "My Properties", href: "/landlord/add-property" },
+];
+
+const landlordManageAccount = [
   { icon: CircleUser, label: "My Profile", href: "#" },
-  { icon: LogOut, label: "Logout", href: "#" },
+];
+
+// Agent sidebar items
+const agentMenuItems = [
+  { icon: Compass, label: "Dashboard", href: "/Dash/agent" },
+];
+
+const agentManageListings = [
+  { icon: House, label: "Properties", href: "/Dash/agent/properties" },
+  { icon: Users, label: "Landlord", href: "/Dash/agent/landlord" },
+  { icon: Calendar, label: "Tours", href: "/Dash/agent/tours" },
+  { icon: KeyRound, label: "Lock Boxes", href: "/Dash/agent/lockboxes" },
+  { icon: Gavel, label: "Bids", href: "/Dash/agent/bids" },
+];
+
+const agentManageAccount = [
+  { icon: CircleUser, label: "Agent Details", href: "/Dash/agent/details" },
 ];
 
 export function Sidebar() {
+  const pathname = usePathname();
+
+  // Determine role from pathname (strict match for dashboard sections)
+  let role: "agent" | "landlord" | "tenant" = "tenant";
+  if (pathname?.startsWith("/Dash/agent")) {
+    role = "agent";
+  } else if (pathname?.startsWith("/Dash/landlord")) {
+    role = "landlord";
+  } else if (pathname?.startsWith("/Dash/tenant")) {
+    role = "tenant";
+  }
+
+  // Select appropriate items based on role
+  const menuItems =
+    role === "agent"
+      ? agentMenuItems
+      : role === "landlord"
+        ? landlordMenuItems
+        : tenantMenuItems;
+
+  const manageListings =
+    role === "agent"
+      ? agentManageListings
+      : role === "landlord"
+        ? landlordManageListings
+        : tenantManageListings;
+
+  const manageAccount =
+    role === "agent"
+      ? agentManageAccount
+      : role === "landlord"
+        ? landlordManageAccount
+        : tenantManageAccount;
+
   return (
     <aside className="w-54 flex flex-col gap-8 bg-card p-6">
       <div>
@@ -28,19 +97,22 @@ export function Sidebar() {
           Main
         </p>
         <div className="space-y-2">
-          {menuItems.map((item) => (
-            <Button
-              key={item.label}
-              variant="ghost"
-              className="w-full justify-start gap-3 rounded-lg border-0"
-              asChild
-            >
-              <a href={item.href}>
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </a>
-            </Button>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Button
+                key={item.label}
+                variant={isActive ? "default" : "ghost"}
+                className="w-full justify-start gap-3 rounded-lg border-0"
+                asChild
+              >
+                <a href={item.href}>
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </a>
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -49,19 +121,22 @@ export function Sidebar() {
           Manage Listings
         </p>
         <div className="space-y-2">
-          {manageListings.map((item) => (
-            <Button
-              key={item.label}
-              variant={item.variant}
-              className="w-full justify-start gap-3 rounded-lg border-0"
-              asChild
-            >
-              <a href={item.href}>
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </a>
-            </Button>
-          ))}
+          {manageListings.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Button
+                key={item.label}
+                variant={isActive ? "default" : "ghost"}
+                className="w-full justify-start gap-3 rounded-lg border-0"
+                asChild
+              >
+                <a href={item.href}>
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </a>
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -70,19 +145,22 @@ export function Sidebar() {
           Manage Account
         </p>
         <div className="space-y-2">
-          {manageAccount.map((item) => (
-            <Button
-              key={item.label}
-              variant="ghost"
-              className="w-full justify-start gap-3 rounded-lg border-0"
-              asChild
-            >
-              <a href={item.href}>
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </a>
-            </Button>
-          ))}
+          {manageAccount.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Button
+                key={item.label}
+                variant={isActive ? "default" : "ghost"}
+                className="w-full justify-start gap-3 rounded-lg border-0"
+                asChild
+              >
+                <a href={item.href}>
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </a>
+              </Button>
+            );
+          })}
         </div>
       </div>
     </aside>

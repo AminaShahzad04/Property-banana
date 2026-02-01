@@ -38,7 +38,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export function RevenueChart() {
   return (
-    <Card className="p-6 mt-16 relative">
+    <Card className="p-6 mt-8 relative">
       <ResponsiveContainer width="100%" height={295}>
         <AreaChart
           data={data}

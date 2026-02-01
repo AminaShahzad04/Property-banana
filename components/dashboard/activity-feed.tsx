@@ -29,13 +29,10 @@ const activities = [
 
 export function ActivityFeed() {
   return (
-    <Card className="p-6 mt-16">
+    <Card className="p-6 mt-8">
       <div className="space-y-4">
         {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex gap-3 pb-3 last:pb-0"
-          >
+          <div key={activity.id} className="flex gap-3 pb-3 last:pb-0">
             <img
               src={activity.image || "/placeholder.svg"}
               alt={activity.type}
