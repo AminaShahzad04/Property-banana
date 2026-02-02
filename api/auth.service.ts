@@ -25,6 +25,7 @@ export const authService = {
   /**
    * Redirect to AWS Cognito logout
    * No need to call this as a fetch - use window.location.href
+   * Backend will redirect to AWS Cognito which then redirects to homepage
    */
   getLogoutUrl(): string {
     return `${API_BASE_URL}/api/cognito/logout`;
@@ -78,9 +79,16 @@ export const authService = {
 
   /**
    * Redirect user to logout
+   * Clears session and redirects to homepage via AWS Cognito
    */
   redirectToLogout(): void {
     if (typeof window !== "undefined") {
+      // Clear any local storage or session storage if needed
+      localStorage.removeItem("user");
+      sessionStorage.clear();
+
+      // Redirect to backend logout endpoint
+      // Backend will redirect to AWS Cognito which then redirects to homepage
       window.location.href = this.getLogoutUrl();
     }
   },

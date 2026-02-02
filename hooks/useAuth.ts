@@ -40,6 +40,8 @@ export function useAuth() {
   };
 
   const logout = () => {
+    // Clear user state first
+    setUser(null);
     // Redirect to AWS Cognito logout
     authService.redirectToLogout();
   };
