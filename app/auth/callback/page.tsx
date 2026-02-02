@@ -13,7 +13,7 @@ export default function AuthCallbackPage() {
         const response = await authService.checkAuthStatus();
         if (response.isAuthenticated) {
           // Redirect to dashboard after successful login
-          router.push("/Dash/dashboard");
+          router.push("/Dash/agent");
         } else {
           // If not authenticated, go to home
           router.push("/");
