@@ -122,3 +122,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom animations for landing page */
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+}
