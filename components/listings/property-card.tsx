@@ -27,7 +27,7 @@ export function PropertyCard({
   image,
 }: PropertyCardProps) {
   return (
-    <Link href={`/listings/${id}`}>
+    <Link href={`/book-tour/${id}`}>
       <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
         {/* Image Container */}
         <div className="relative h-64">
