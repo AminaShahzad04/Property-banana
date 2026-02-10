@@ -33,19 +33,6 @@ export function SignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    // Validate password match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
     setLoading(true);
 
     // Store the selected role in localStorage to assign after Cognito signup
@@ -69,13 +56,6 @@ export function SignUpForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
         {/* Full Name Field */}
         <div className="space-y-2">
           <Label
@@ -90,7 +70,6 @@ export function SignUpForm() {
             placeholder="Enter full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            required
             disabled={loading}
             className="w-full border-gray-300 px-4 py-3 rounded-md"
           />
@@ -110,7 +89,6 @@ export function SignUpForm() {
             placeholder="Enter Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             disabled={loading}
             className="w-full border-gray-300 px-4 py-3 rounded-md"
           />
@@ -128,7 +106,6 @@ export function SignUpForm() {
             id="role"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            required
             disabled={loading}
             className="w-full border border-gray-300 px-4 py-3 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
           >
@@ -155,9 +132,7 @@ export function SignUpForm() {
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
               disabled={loading}
-              minLength={8}
               className="w-full border-gray-300 px-4 py-3 pr-10 rounded-md"
             />
             <Button
@@ -191,9 +166,7 @@ export function SignUpForm() {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
               disabled={loading}
-              minLength={8}
               className="w-full border-gray-300 px-4 py-3 pr-10 rounded-md"
             />
             <Button

@@ -63,7 +63,6 @@ export function SignInForm() {
               placeholder="Enter Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               disabled={loading}
               className="w-full border-gray-300 px-4 py-3 rounded-[1px]"
             />
@@ -84,7 +83,6 @@ export function SignInForm() {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
                 disabled={loading}
                 className="w-full border-gray-300 px-4 py-3 pr-10 rounded-[1px]"
               />
