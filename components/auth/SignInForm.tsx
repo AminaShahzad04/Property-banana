@@ -4,11 +4,19 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Eye, EyeOff } from "lucide-react";
 import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 import { UAEPassLoginModal } from "@/components/auth/UAEPassLoginModal";
 import { uaePassService } from "@/api/uaepass.service";
 
 export function SignInForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showUAEPass, setShowUAEPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,47 +42,109 @@ export function SignInForm() {
   return (
     <>
       <div className="space-y-6 mt-8">
+        {/* Sign In Heading */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Sign In</h1>
-          <p className="text-sm text-muted-foreground">
-            Welcome back! Sign in to continue
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
         </div>
 
-        {/* Information Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            Click below to securely sign in through AWS Cognito
-          </p>
-        </div>
+        {/* Form */}
+        <form onSubmit={handleSignIn} className="space-y-5">
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-900"
+            >
+              Email Address<span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+              className="w-full border-gray-300 px-4 py-3 rounded-[1px]"
+            />
+          </div>
 
-        {/* Sign In Button */}
-        <Button
-          onClick={handleSignIn}
-          disabled={loading}
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-auto disabled:opacity-50"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-black border-t-transparent mr-2 inline-block"></div>
-              Redirecting...
-            </>
-          ) : (
-            "Sign In with Email"
-          )}
-        </Button>
+          {/* Password Field */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-900"
+            >
+              Password<span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                className="w-full border-gray-300 px-4 py-3 pr-10 rounded-[1px]"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 border-0 hover:bg-transparent"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+          </div>
 
-        {/* Forgot Password Link */}
-        <div className="text-center">
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              />
+              <Label
+                htmlFor="remember"
+                className="text-sm text-gray-700 cursor-pointer font-normal"
+              >
+                Remember me
+              </Label>
+            </div>
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-[#008BBC]  border-none underline text-sm h-auto p-0 font-normal"
+            >
+              Forgot Password
+            </Button>
+          </div>
+
+          {/* Sign In Button */}
           <Button
-            type="button"
-            variant="link"
-            onClick={() => setShowForgotPassword(true)}
-            className="text-[#008BBC] hover:underline text-sm h-auto p-0"
+            type="submit"
+            disabled={loading}
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 h-auto disabled:opacity-50"
           >
-            Forgot Password?
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-black border-t-transparent mr-2 inline-block"></div>
+                Signing In...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
-        </div>
+        </form>
 
         {/* Divider */}
         <div className="relative">
@@ -82,9 +152,7 @@ export function SignInForm() {
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">
-              Or continue with
-            </span>
+            <span className="bg-white px-4 text-gray-500">Or</span>
           </div>
         </div>
 
@@ -93,45 +161,42 @@ export function SignInForm() {
           type="button"
           onClick={handleUAEPassLogin}
           disabled={loading}
-          variant="outline"
-          className="w-full bg-black text-white hover:bg-black/80 border-black font-semibold py-3 h-auto disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-black text-white hover:bg-black/90 font-semibold py-3 h-auto disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2 inline-block"></div>
-              Redirecting to UAE Pass...
+              Redirecting...
             </>
           ) : (
             <>
               <img
                 src="/UAEPass_Logo.png"
                 alt="UAE Pass Logo"
-                className="h-6 w-auto"
+                className="h-5 w-auto"
               />
-              Sign In with UAE Pass
+              login with UAE PASS
             </>
           )}
         </Button>
 
         {/* Sign Up Link */}
         <div className="text-center text-sm">
-          <p>
-            Don't have an account?{" "}
-            <Link
-              href="/sign-up"
-              className="text-[#008BBC] hover:underline font-medium"
-            >
-              Sign Up
-            </Link>
-          </p>
+          <span className="text-gray-600">Don't Have An Account ? </span>
+          <Link
+            href="/sign-up"
+            className="text-[#008BBC] hover:underline font-semibold"
+          >
+            Sign Up
+          </Link>
         </div>
       </div>
 
-      {/* Forgot Password Modal - COMMENTED OUT */}
-      {/* <ForgotPasswordModal
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
-      /> */}
+      />
 
       {/* UAE Pass Login Modal */}
       <UAEPassLoginModal
