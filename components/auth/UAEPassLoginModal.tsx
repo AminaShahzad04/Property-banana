@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Label } from "@/components/ui/Label";
 import { X } from "lucide-react";
+import { uaePassService } from "@/api/uaepass.service";
 
 interface UAEPassLoginModalProps {
   isOpen: boolean;
@@ -17,8 +18,9 @@ export function UAEPassLoginModal({ isOpen, onClose }: UAEPassLoginModalProps) {
   const [username, setUsername] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [stage, setStage] = useState<"initial" | "login" | "success">(
-    "initial"
+    "initial",
   );
+  const [loading, setLoading] = useState(false);
 
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +29,9 @@ export function UAEPassLoginModal({ isOpen, onClose }: UAEPassLoginModalProps) {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStage("success");
-    // Redirect after 2 seconds
-    setTimeout(() => {
-      handleClose();
-      // Navigate to dashboard
-    }, 2000);
+    setLoading(true);
+    // Redirect to UAE Pass authorization endpoint
+    uaePassService.redirectToLogin();
   };
 
   const handleClose = () => {

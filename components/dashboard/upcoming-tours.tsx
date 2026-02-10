@@ -1,32 +1,46 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { TourCard } from "./tour-card";
 import Link from "next/link";
-
-const sampleTours = [
-  {
-    id: "1",
-    title: "Palm Jumeirah, Dubai",
-    image: "/jumeirah.png",
-    date: "Friday, 19 April",
-    time: "11:00 AM – 11:30 AM",
-    timer: "00:22:00",
-    badge: "XXXXXX",
-    badgeColor: "yellow" as const,
-    status: "upcoming" as const,
-  },
-  {
-    id: "2",
-    title: "Palm Jumeirah, Dubai",
-    image: "/jumeirah.png",
-    date: "Friday, 19 April",
-    time: "11:00 AM – 11:30 AM",
-    timer: "00:22:00",
-    badge: "d4r4fgg",
-    badgeColor: "blue" as const,
-    status: "upcoming" as const,
-  },
-];
+import { tenantService, Tour } from "@/api/tenant.service";
 
 export function UpcomingTours() {
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const data = await tenantService.getMyTours("SCHEDULED");
+        setTours(data.tours);
+      } catch (error) {
+        console.error("Failed to fetch tours:", error);
+        setError("Failed to load tours");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTours();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-800">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -39,11 +53,33 @@ export function UpcomingTours() {
           View All Tours
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-6">
-        {sampleTours.map((tour) => (
-          <TourCard key={tour.id} {...tour} />
-        ))}
-      </div>
+      {tours.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500 mb-2">No upcoming tours</p>
+          <p className="text-sm text-gray-400">Book a tour to view property</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-6">
+          {tours.slice(0, 2).map((tour) => (
+            <TourCard
+              key={tour.tour_id}
+              id={tour.tour_id.toString()}
+              title={`Property #${tour.property_id}`}
+              image="/jumeirah.png"
+              date={new Date(tour.tour_date).toLocaleDateString("en-US", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+              time={tour.time_slot}
+              timer="00:00:00"
+              badge={tour.status}
+              badgeColor="blue"
+              status="upcoming"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

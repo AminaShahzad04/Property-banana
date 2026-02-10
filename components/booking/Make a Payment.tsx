@@ -111,7 +111,7 @@ export function RentPropertyModal({
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-card py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -120,7 +120,7 @@ export function RentPropertyModal({
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span className="text-lg font-semibold">Rent a Property</span>
+            <span className="text-lg font-semibold">Make a Payment</span>
           </button>
         </div>
 
@@ -561,8 +561,8 @@ export function RentPropertyModal({
                           formData.selectedDate === day.toString()
                             ? "bg-yellow-400 font-semibold"
                             : day === 1
-                            ? "bg-yellow-400 font-semibold"
-                            : ""
+                              ? "bg-yellow-400 font-semibold"
+                              : ""
                         }`}
                       >
                         {day}
@@ -587,8 +587,8 @@ export function RentPropertyModal({
                         formData.selectedTime === slot.time
                           ? "bg-yellow-400 border-yellow-400 font-semibold"
                           : slot.available
-                          ? "border-gray-300 hover:border-gray-400 bg-white"
-                          : "border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50"
+                            ? "border-gray-300 hover:border-gray-400 bg-white"
+                            : "border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50"
                       }`}
                     >
                       {slot.time}

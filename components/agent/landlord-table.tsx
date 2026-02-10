@@ -5,85 +5,75 @@ import { MoreVertical, Search } from "lucide-react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Pagination } from "@/components/ui/Pagination";
 import { Table } from "@/components/ui/Table";
-import { useState } from "react";
-
-const landlords = [
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 5,
-    price: "ADE 12,000/year",
-    schedule: 3,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 6,
-    price: "ADE 12,000/year",
-    schedule: 4,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 8,
-    price: "ADE 12,000/year",
-    schedule: 9,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 7,
-    price: "ADE 12,000/year",
-    schedule: 0,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 89,
-    price: "ADE 12,000/year",
-    schedule: 7,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 5,
-    price: "ADE 12,000/year",
-    schedule: 3,
-    last: "2 days ago",
-  },
-  {
-    name: "Almed Al Maktoon",
-    email: "abc@gmail.com",
-    phone: "023-3342342-4433",
-    properties: 3,
-    price: "ADE 12,000/year",
-    schedule: 6,
-    last: "2 days ago",
-  },
-];
+import { useState, useEffect } from "react";
+import { agentService, type Client } from "@/api/agent.service";
 
 export function LandlordTable() {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 8;
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const response = await agentService.getClients();
+        setClients(response.clients);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch clients",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  // Filter only landlords
+  const landlords = clients.filter((client) => client.type === "Landlord");
+
+  const filteredData = landlords.filter(
+    (landlord) =>
+      landlord.fullName.toLowerCase().includes(search.toLowerCase()) ||
+      landlord.email.toLowerCase().includes(search.toLowerCase()) ||
+      landlord.phone.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage,
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-yellow-400 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-sm text-red-800">{error}</p>
+      </div>
+    );
+  }
   const columns = [
     {
-      key: "name",
+      key: "fullName",
       header: "Landlord Name",
       className: "px-6 py-4 font-semibold text-sm",
     },
     {
       key: "contact",
       header: "Contact Info",
-      render: (row: any) => (
+      render: (row: Client) => (
         <>
           <div className="font-semibold">{row.email}</div>
           <div className="text-xs text-gray-500">{row.phone}</div>
@@ -92,25 +82,15 @@ export function LandlordTable() {
       className: "px-6 py-4 text-sm",
     },
     {
-      key: "properties",
+      key: "propertiesCount",
       header: "No of Properties",
       className: "px-6 py-4 text-blue-600 font-semibold text-sm cursor-pointer",
     },
     {
-      key: "price",
-      header: "Price Range",
-      className: "px-6 py-4 font-semibold text-sm",
-    },
-    {
-      key: "schedule",
-      header: "Total Schedule",
+      key: "toursCount",
+      header: "Total Tours",
       className:
         "px-6 py-4 text-green-600 font-semibold text-sm cursor-pointer",
-    },
-    {
-      key: "last",
-      header: "Last Activity",
-      className: "px-6 py-4 text-gray-500 text-sm",
     },
     {
       key: "action",
@@ -124,35 +104,11 @@ export function LandlordTable() {
     },
   ];
 
-  // Search and Pagination state
-  const [search, setSearch] = useState("");
-  const [portfolioType, setPortfolioType] = useState("All landlord");
-  const [portfolioValue, setPortfolioValue] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 8;
-  const tableData = landlords.map((l) => ({
+  const tableData = paginatedData.map((l) => ({
     ...l,
     contact: l.email,
     action: "",
   }));
-  let filteredData = tableData.filter(
-    (l) =>
-      l.name.toLowerCase().includes(search.toLowerCase()) ||
-      l.email.toLowerCase().includes(search.toLowerCase()) ||
-      l.phone.toLowerCase().includes(search.toLowerCase()),
-  );
-  // Portfolio type filter (example: could be extended with a real field)
-  if (portfolioType !== "All landlord") {
-    filteredData = filteredData.filter((l) => l.name === portfolioType);
-  }
-  // Portfolio value filter (example: could be extended with a real field)
-  if (portfolioValue !== "All") {
-    filteredData = filteredData.filter((l) => l.properties > 10); // Example logic
-  }
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  );
 
   return (
     <div className="bg-card rounded-lg ">
@@ -168,30 +124,12 @@ export function LandlordTable() {
               onChange={setSearch}
               placeholder="Search by name, email, or phone number"
             />
-            <div className="flex items-center gap-4 ml-6 w-full justify-end">
-              <select
-                className="px-4 py-2 bg-gray-50 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                value={portfolioType}
-                onChange={(e) => setPortfolioType(e.target.value)}
-              >
-                <option>All landlord</option>
-                <option>Almed Al Maktoon</option>
-              </select>
-              <select
-                className="px-4 py-2 bg-gray-50 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                value={portfolioValue}
-                onChange={(e) => setPortfolioValue(e.target.value)}
-              >
-                <option>All</option>
-                <option>High value portfolio</option>
-              </select>
-            </div>
           </div>
         </div>
         <div className="bg-card rounded-lg p-6">
-          <Table columns={columns} data={paginatedData} />
+          <Table columns={columns} data={tableData} />
           <Pagination
-            totalRows={tableData.length}
+            totalRows={filteredData.length}
             rowsPerPage={rowsPerPage}
             currentPage={currentPage}
             onPageChange={setCurrentPage}

@@ -1,6 +1,6 @@
 "use client";
 
-import AddPropertyForm from "@/components/landlord/add-property-form";
+import AddPropertyForm from "@/components/add-property/add-property-form";
 import Link from "next/link";
 
 export default function AddPropertyPage() {
@@ -18,7 +18,7 @@ export default function AddPropertyPage() {
         </div>
 
         {/* Form Content */}
-        <div className="px-6 py-8 bg-gray-50">
+        <div className="px-6 py-8 bg-card">
           <AddPropertyForm />
         </div>
       </div>

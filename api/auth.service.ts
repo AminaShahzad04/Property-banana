@@ -94,40 +94,208 @@ export const authService = {
   },
 
   /**
-   * Forgot password functionality
-   * Note: This may need to be implemented on backend
+   * Change user password (requires authentication)
    */
-  async forgotPassword(email: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+  async changePassword(
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/change-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ oldPassword, newPassword }),
       },
-      body: JSON.stringify({ email }),
-    });
+    );
 
     if (!response.ok) {
-      throw new Error("Failed to send reset email");
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to change password");
     }
+
+    return response.json();
   },
 
   /**
-   * Reset password functionality
-   * Note: This may need to be implemented on backend
+   * Initiate forgot password flow
+   * Sends reset code to user's email
    */
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+  async forgotPassword(
+    email: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/forgot-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to send reset code");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Confirm forgot password with verification code
+   */
+  async confirmForgotPassword(
+    email: string,
+    code: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/confirm-forgot-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, code, newPassword }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to reset password");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Refresh access token
+   */
+  async refreshToken(): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/cognito/refresh-token`, {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, newPassword }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to reset password");
+      throw new Error("Failed to refresh token");
     }
+
+    return response.json();
+  },
+
+  /**
+   * Update user attributes in Cognito
+   */
+  async updateUserAttributes(attributes: {
+    email?: string;
+    phone_number?: string;
+    name?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    verificationRequired?: boolean;
+  }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/update-user-attributes`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(attributes),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to update attributes");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Verify user attribute (email or phone)
+   */
+  async verifyAttribute(
+    attributeName: "email" | "phone_number",
+    code: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/verify-attribute`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ attributeName, code }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to verify attribute");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Resend verification code
+   */
+  async resendVerificationCode(
+    attributeName: "email" | "phone_number",
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/cognito/resend-verification-code`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ attributeName }),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        error.error?.message || "Failed to resend verification code",
+      );
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Delete user account permanently
+   */
+  async deleteAccount(): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/cognito/delete-account`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to delete account");
+    }
+
+    // After successful deletion, clear local data and redirect
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+
+    return response.json();
   },
 };

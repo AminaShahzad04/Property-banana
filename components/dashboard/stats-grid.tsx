@@ -1,11 +1,11 @@
-import { StatCard } from "./stat-card"
+import { StatCard } from "./stat-card";
 
 const stats = [
-  { image: "/house.png", label: "All property", value: "586" },
-  { image: "/Analysis.png", label: "Total views", value: "12k" },
-  { image: "/rating.png", label: "Total visitor reviews", value: "438" },
-  { image: "/favourite.png", label: "Total favorite", value: "438" },
-]
+  { image: "/house.png", label: "All property", value: "0" },
+  { image: "/Analysis.png", label: "Total views", value: "0" },
+  { image: "/rating.png", label: "Total visitor reviews", value: "0" },
+  { image: "/favourite.png", label: "Total favorite", value: "0" },
+];
 
 export function StatsGrid() {
   return (
@@ -14,5 +14,5 @@ export function StatsGrid() {
         <StatCard key={stat.label} {...stat} />
       ))}
     </div>
-  )
+  );
 }

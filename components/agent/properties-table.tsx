@@ -9,95 +9,9 @@ import { Table } from "@/components/ui/Table";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const properties = [
-  {
-    id: 1,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Apartment",
-    price: "ADE 12,000/year",
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "NO",
-  },
-  {
-    id: 2,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Villa",
-    price: "ADE 12,000/year",
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "NO",
-  },
-  {
-    id: 3,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Townhouse",
-    price: "ADE 12,000/year",
-    status: "Pending",
-    statusColor: "bg-yellow-100 text-yellow-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "Yes",
-  },
-  {
-    id: 4,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Apartment",
-    price: "ADE 12,000/year",
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "NO",
-  },
-  {
-    id: 5,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Apartment",
-    price: "ADE 12,000/year",
-    status: "Rejected",
-    statusColor: "bg-red-100 text-red-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "Yes",
-  },
-  {
-    id: 6,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Villa",
-    price: "ADE 12,000/year",
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "NO",
-  },
-  {
-    id: 7,
-    name: "Luxury Marian Apartment",
-    location: "Dubai Marina - Dubai",
-    image: "/jumeirah.png",
-    type: "Apartment",
-    price: "ADE 12,000/year",
-    status: "Draft",
-    statusColor: "bg-blue-100 text-blue-700",
-    lastUpdated: "25-01-15 10:30 AM",
-    pendingChanges: "Yes",
-  },
-];
-
 export function PropertiesTable() {
   const router = useRouter();
+  const properties: any[] = [];
   const columns = [
     {
       key: "property",

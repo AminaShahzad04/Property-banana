@@ -19,7 +19,7 @@ export default function PermitValidationModal({
   onCancel,
 }: PermitValidationModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-lg w-full p-8 space-y-5 shadow-2xl">
         {/* Title */}
         <h1 className="text-2xl font-bold text-gray-900">

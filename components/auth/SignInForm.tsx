@@ -4,114 +4,113 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-// import { Input } from "@/components/ui/Input";
-// import { Checkbox } from "@/components/ui/Checkbox";
-// import { Label } from "@/components/ui/Label";
-// import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
+import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 import { UAEPassLoginModal } from "@/components/auth/UAEPassLoginModal";
+import { uaePassService } from "@/api/uaepass.service";
 
 export function SignInForm() {
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [rememberMe, setRememberMe] = useState(false);
-  // const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showUAEPass, setShowUAEPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-  const handleSignIn = () => {
-    // Redirect to AWS Cognito login
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Redirect to Cognito Hosted UI for authentication
+    // The callback will handle role-based routing
     window.location.href = `${API_BASE_URL}/api/cognito/login`;
+  };
+
+  const handleUAEPassLogin = () => {
+    setLoading(true);
+    // Redirect to UAE Pass authorization endpoint
+    uaePassService.redirectToLogin();
   };
 
   return (
     <>
       <div className="space-y-6 mt-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Sign In To Your Account
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Sign In</h1>
           <p className="text-sm text-muted-foreground">
-            Click below to sign in with AWS Cognito
+            Welcome back! Sign in to continue
           </p>
         </div>
 
-        {/* Email Field - COMMENTED OUT */}
-        {/* <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium">
-            Email Address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full"
-          />
-        </div> */}
-
-        {/* Password Field - COMMENTED OUT */}
-        {/* <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium">
-              Password
-            </Label>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full"
-          />
-        </div> */}
-
-        {/* Remember Me - COMMENTED OUT */}
-        {/* <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-            />
-            <Label
-              htmlFor="remember"
-              className="text-sm font-normal cursor-pointer"
-            >
-              Remember me
-            </Label>
-          </div>
-          <Button
-            type="button"
-            variant="link"
-            onClick={() => setShowForgotPassword(true)}
-            className="text-[#008BBC] hover:underline text-xs h-auto p-0"
-          >
-            Forgot Password?
-          </Button>
-        </div> */}
+        {/* Information Box */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
+            Click below to securely sign in through AWS Cognito
+          </p>
+        </div>
 
         {/* Sign In Button */}
         <Button
           onClick={handleSignIn}
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 h-auto"
+          disabled={loading}
+          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-auto disabled:opacity-50"
         >
-          Sign In
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-black border-t-transparent mr-2 inline-block"></div>
+              Redirecting...
+            </>
+          ) : (
+            "Sign In with Email"
+          )}
         </Button>
+
+        {/* Forgot Password Link */}
+        <div className="text-center">
+          <Button
+            type="button"
+            variant="link"
+            onClick={() => setShowForgotPassword(true)}
+            className="text-[#008BBC] hover:underline text-sm h-auto p-0"
+          >
+            Forgot Password?
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">
+              Or continue with
+            </span>
+          </div>
+        </div>
 
         {/* UAE Pass Button */}
         <Button
           type="button"
+          onClick={handleUAEPassLogin}
+          disabled={loading}
           variant="outline"
-          className="w-full bg-black text-white hover:bg-black/80 border-black font-semibold py-2 h-auto"
-          onClick={() => setShowUAEPass(true)}
+          className="w-full bg-black text-white hover:bg-black/80 border-black font-semibold py-3 h-auto disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          Login With UAE Pass
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2 inline-block"></div>
+              Redirecting to UAE Pass...
+            </>
+          ) : (
+            <>
+              <img
+                src="/UAEPass_Logo.png"
+                alt="UAE Pass Logo"
+                className="h-6 w-auto"
+              />
+              Sign In with UAE Pass
+            </>
+          )}
         </Button>
 
         {/* Sign Up Link */}

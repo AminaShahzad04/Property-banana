@@ -17,35 +17,34 @@ export function FilterSidebar() {
 
   return (
     <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 h-fit sticky top-24 overflow-hidden">
-      <h2 className="text-2xl font-bold mb-6 break-words">Find your home</h2>
+      <h2 className="text-lg font-semibold mb-6 break-words">Find your home</h2>
 
       {/* Search Input */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <div className="flex items-center border border-gray-300 rounded-lg px-4 py-3">
-          <svg
-            className="w-5 h-5 text-gray-400 mr-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            placeholder="What are you looking for?"
-            className="flex-1 min-w-0 outline-none text-gray-700"
+
+      <div className="flex items-center border border-black rounded-sm mb-6 px-4 py-3">
+        <svg
+          className="w-5 h-5 text-black mr-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
-        </div>
+        </svg>
+        <input
+          type="text"
+          placeholder="What are you looking for?"
+          className="flex-1 min-w-0 outline-none text-black"
+        />
       </div>
 
       {/* Property Type */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <h3 className="font-semibold text-lg mb-3">Property Type</h3>
+      <div className="mb-6 pb-6">
+        <h3 className="font-semibold text-md mb-3">Property Type</h3>
         <div className="space-y-3">
           {[
             { key: "all", label: "All" },
@@ -54,7 +53,10 @@ export function FilterSidebar() {
             { key: "building", label: "Building" },
             { key: "villa", label: "Villa" },
           ].map(({ key, label }) => (
-            <label key={key} className="flex items-center cursor-pointer">
+            <label
+              key={key}
+              className="flex text-black items-center cursor-pointer"
+            >
               <input
                 type="checkbox"
                 checked={propertyTypes[key as keyof typeof propertyTypes]}
@@ -64,31 +66,31 @@ export function FilterSidebar() {
                     [key]: e.target.checked,
                   })
                 }
-                className="w-5 h-5 rounded border-gray-300 mr-3"
+                className="w-4 h-4 rounded-lg border-black mr-3 accent-black"
               />
-              <span className="text-gray-700 break-words">{label}</span>
+              <span className="text-black text-base break-words">{label}</span>
             </label>
           ))}
         </div>
       </div>
 
       {/* Price Range */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <h3 className="font-semibold text-lg mb-3">Price Range</h3>
+      <div className="mb-6 pb-6 ">
+        <h3 className="font-semibold text-base mb-3">Price Range</h3>
         <div className="mb-4">
-          <input type="range" className="w-full" />
+          <input type="range" className="w-full h-1.5 rounded-full" />
         </div>
         <div className="flex items-center gap-3">
           <input
             type="text"
-            placeholder="Dhs0"
-            className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            placeholder="Dhs 0"
+            className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-base"
           />
-          <span className="text-gray-500 flex-shrink-0">-</span>
+          <span className="text-gray-500 flex-shrink-0 text-base">-</span>
           <input
             type="text"
-            placeholder="Dhs5,000,000"
-            className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            placeholder="Dhs 5,000,000"
+            className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-base"
           />
         </div>
       </div>

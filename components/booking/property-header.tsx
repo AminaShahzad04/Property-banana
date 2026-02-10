@@ -36,7 +36,7 @@ export function PropertyHeader({
               variant="outline"
               className="bg-[#008BBC] text-white border-[#008BBC] hover:bg-[#008BBC]/90 px-6"
             >
-              {bidApproved ? "Rent A Property" : "Place a Bid"}
+              {bidApproved ? "Make a Payment" : "Place a Bid"}
             </Button>
             <Button
               onClick={onBookTour}
@@ -49,19 +49,7 @@ export function PropertyHeader({
 
         {/* Bottom Row - Rating, Location, Share, Save */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm font-semibold">{rating}</span>
-              <span className="text-sm text-gray-600 underline cursor-pointer">
-                {reviews} reviews
-              </span>
-            </div>
-            <span className="text-gray-400">·</span>
-            <div className="text-sm text-gray-900 underline cursor-pointer">
-              {location}
-            </div>
-          </div>
+          <div className="flex items-center gap-4"></div>
 
           {/* Share and Save */}
           <div className="flex items-center gap-4">

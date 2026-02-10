@@ -8,210 +8,15 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { Table } from "@/components/ui/Table";
 import Image from "next/image";
 
-const tours = [
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "Emily Rod",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Confirmed", color: "text-green-700 bg-green-100" },
-    lockBox: { label: "Available", color: "text-green-700 bg-green-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Scheduled", color: "text-blue-700 bg-blue-100" },
-    lockBox: { label: "In use", color: "text-blue-700 bg-blue-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "No-show", color: "text-yellow-700 bg-yellow-100" },
-    lockBox: { label: "Reserved", color: "text-yellow-700 bg-yellow-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Active", color: "text-green-700 bg-green-100" },
-    lockBox: { label: "Available", color: "text-green-700 bg-green-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Cancelled", color: "text-red-700 bg-red-100" },
-    lockBox: { label: "In use", color: "text-blue-700 bg-blue-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Completed", color: "text-purple-700 bg-purple-100" },
-    lockBox: { label: "Available", color: "text-green-700 bg-green-100" },
-  },
-  {
-    date: "25-01-15",
-    time: "10:30 AM",
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-      represent: true,
-    },
-    tenant: {
-      name: "abc@gmail.com",
-      email: "abc@gmail.com",
-      phone: "023-3323442-4433",
-    },
-    status: { label: "Scheduled", color: "text-blue-700 bg-blue-100" },
-    lockBox: { label: "Available", color: "text-green-700 bg-green-100" },
-  },
-];
-
 export function ToursTable() {
+  const tours: any[] = []; // Empty - agent tours come from landlord clients
+
   const [activeTab, setActiveTab] = useState("Past");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All Statuses");
   const [property, setProperty] = useState("All Properties");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
-  // Helper to parse date/time string to JS Date
-  function parseTourDateTime(date: string, time: string) {
-    // date: "25-01-15", time: "10:30 AM"
-    // Format: YY-MM-DD (assuming 20YY)
-    const [yy, mm, dd] = date.split("-");
-    const year = 2000 + parseInt(yy, 10);
-    const month = parseInt(mm, 10) - 1;
-    const day = parseInt(dd, 10);
-    // time: "10:30 AM"
-    const [hms, ampm] = time.split(" ");
-    let [hour, minute] = hms.split(":").map(Number);
-    if (ampm === "PM" && hour !== 12) hour += 12;
-    if (ampm === "AM" && hour === 12) hour = 0;
-    return new Date(year, month, day, hour, minute);
-  }
-
-  const now = new Date();
-  let filteredTours = tours.filter(
-    (tour) =>
-      tour.property.name.toLowerCase().includes(search.toLowerCase()) ||
-      tour.property.location.toLowerCase().includes(search.toLowerCase()) ||
-      tour.tenant.name.toLowerCase().includes(search.toLowerCase()) ||
-      tour.landlord.name.toLowerCase().includes(search.toLowerCase())
-  );
-  // Tab filter
-  if (activeTab === "Upcoming") {
-    filteredTours = filteredTours.filter(tour => parseTourDateTime(tour.date, tour.time) > now);
-  } else if (activeTab === "Past") {
-    filteredTours = filteredTours.filter(tour => parseTourDateTime(tour.date, tour.time) < now);
-  }
-  if (status !== "All Statuses") {
-    filteredTours = filteredTours.filter(t => t.status.label === status);
-  }
-  if (property !== "All Properties") {
-    filteredTours = filteredTours.filter(t => t.property.name === property);
-  }
-  const paginatedTours = filteredTours.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  );
 
   const columns = [
     {
@@ -252,7 +57,9 @@ export function ToursTable() {
       header: "Landlord",
       render: (row: any) => (
         <>
-          <div className="font-semibold text-sm">{row.landlord.name}</div>
+          <div className="font-semibold text-sm">
+            {row.landlord?.name || "N/A"}
+          </div>
           <div className="text-xs text-[#018FBD] cursor-pointer">
             You represent this landlord
           </div>
@@ -265,8 +72,12 @@ export function ToursTable() {
       header: "Tenant(for coordination)",
       render: (row: any) => (
         <>
-          <div className="font-semibold text-sm">{row.tenant.name}</div>
-          <div className="text-xs text-[#CAB305]">{row.tenant.phone}</div>
+          <div className="font-semibold text-sm">
+            {row.tenant?.name || "N/A"}
+          </div>
+          <div className="text-xs text-[#CAB305]">
+            {row.tenant?.phone || "N/A"}
+          </div>
         </>
       ),
       className: "px-6 py-4",
@@ -276,9 +87,9 @@ export function ToursTable() {
       header: "Status",
       render: (row: any) => (
         <span
-          className={`px-3 py-1 rounded-none font-semibold text-xs ${row.status.color}`}
+          className={`px-3 py-1 rounded-none font-semibold text-xs ${row.status?.color || "bg-gray-100 text-gray-700"}`}
         >
-          {row.status.label}
+          {row.status?.label || "N/A"}
         </span>
       ),
       className: "px-6 py-4",
@@ -288,14 +99,15 @@ export function ToursTable() {
       header: "Lock Box",
       render: (row: any) => (
         <span
-          className={`px-3 py-1 rounded-none font-semibold text-xs ${row.lockBox.color}`}
+          className={`px-3 py-1 rounded-none font-semibold text-xs ${row.lockBox?.color || "bg-gray-100 text-gray-700"}`}
         >
-          {row.lockBox.label}
+          {row.lockBox?.label || "N/A"}
         </span>
       ),
       className: "px-6 py-4",
     },
   ];
+
   return (
     <div className="bg-card rounded-lg">
       <div className="bg-gray-50 rounded-lg">
@@ -362,35 +174,33 @@ export function ToursTable() {
                 <option>Confirmed</option>
                 <option>Scheduled</option>
                 <option>No-show</option>
-                <option>Active</option>
                 <option>Cancelled</option>
                 <option>Completed</option>
-              </select>
-              <select
-                className="px-4 py-2 bg-gray-50 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                value={property}
-                onChange={(e) => setProperty(e.target.value)}
-              >
-                <option>All Properties</option>
-                {Array.from(new Set(tours.map((t) => t.property.name))).map(
-                  (name) => (
-                    <option key={name}>{name}</option>
-                  ),
-                )}
               </select>
             </div>
           </div>
         </div>
         <div className="bg-card rounded-lg p-6">
-          <Table columns={columns} data={paginatedTours} />
-          <div className="flex items-center justify-between p-6">
-            <Pagination
-              totalRows={tours.length}
-              rowsPerPage={rowsPerPage}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
-          </div>
+          {tours.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-2">No tours found</p>
+              <p className="text-sm text-gray-400">
+                Tours will appear here once your landlord clients schedule them
+              </p>
+            </div>
+          ) : (
+            <>
+              <Table columns={columns} data={tours} />
+              <div className="flex items-center justify-between p-6">
+                <Pagination
+                  totalRows={tours.length}
+                  rowsPerPage={rowsPerPage}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

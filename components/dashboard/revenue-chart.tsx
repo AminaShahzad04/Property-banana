@@ -11,15 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 
-const data = [
-  { name: "1", value: 140 },
-  { name: "5", value: 180 },
-  { name: "10", value: 160 },
-  { name: "15", value: 220 },
-  { name: "20", value: 210 },
-  { name: "25", value: 190 },
-  { name: "30", value: 180 },
-];
+const data: any[] = []; // Empty - property views data will come from analytics API
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -37,6 +29,19 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function RevenueChart() {
+  if (data.length === 0) {
+    return (
+      <Card className="p-6 mt-8">
+        <div className="text-center py-24">
+          <p className="text-gray-500 mb-2">No property view data available</p>
+          <p className="text-sm text-gray-400">
+            View statistics will appear here once you interact with properties
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6 mt-8 relative">
       <ResponsiveContainer width="100%" height={295}>

@@ -1,153 +1,136 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table as ReusableTable } from "@/components/ui/Table";
 import { MoreVertical } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import Image from "next/image";
-
-const bids = [
-  {
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-    },
-    tenant: {
-      email: "abc@gmail.com",
-      phone: "023-33234324-4433",
-    },
-    offerAmount: "ADE 12,000/year Rent",
-    type: "Rent",
-    submitted: "25-01-15",
-    status: { label: "New", color: "bg-green-100 text-green-700" },
-  },
-  {
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-    },
-    tenant: {
-      email: "abc@gmail.com",
-      phone: "023-33234324-4433",
-    },
-    offerAmount: "ADE 12,000/year Rent",
-    type: "Rent",
-    submitted: "25-01-15",
-    status: { label: "Under Review", color: "bg-blue-100 text-blue-700" },
-  },
-  {
-    property: {
-      name: "Luxury Marian Apartment",
-      location: "Dubai Marina , Dubai",
-      image: "/jumeirah.png",
-    },
-    landlord: {
-      name: "Rober Chen",
-    },
-    tenant: {
-      email: "abc@gmail.com",
-      phone: "023-33234324-4433",
-    },
-    offerAmount: "ADE 12,000/year Rent",
-    type: "Rent",
-    submitted: "25-01-15",
-    status: { label: "Countered", color: "bg-purple-100 text-purple-700" },
-  },
-  // ... more rows as needed
-];
+import { agentService, type Bid } from "@/api/agent.service";
 
 export function BidsTable() {
+  const [bids, setBids] = useState<Bid[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [property, setProperty] = useState("All property");
   const [status, setStatus] = useState("All status");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
 
+  useEffect(() => {
+    const fetchBids = async () => {
+      try {
+        setLoading(true);
+        const response = await agentService.getBids();
+        setBids(response.bids);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch bids");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBids();
+  }, []);
+
+  const getStatusDisplay = (status: Bid["status"]) => {
+    const statusMap = {
+      OPEN: { label: "New", color: "bg-green-100 text-green-700" },
+      COUNTER_OFFER: {
+        label: "Countered",
+        color: "bg-purple-100 text-purple-700",
+      },
+      ACCEPTED: { label: "Accepted", color: "bg-blue-100 text-blue-700" },
+      REJECTED: { label: "Rejected", color: "bg-red-100 text-red-700" },
+      WITHDRAWN: { label: "Withdrawn", color: "bg-gray-100 text-gray-700" },
+    };
+    return (
+      statusMap[status] || { label: status, color: "bg-gray-100 text-gray-700" }
+    );
+  };
+
   let filteredData = bids.filter(
     (row) =>
-      row.property.name.toLowerCase().includes(search.toLowerCase()) ||
-      row.landlord.name.toLowerCase().includes(search.toLowerCase()) ||
-      row.tenant.email.toLowerCase().includes(search.toLowerCase()) ||
-      row.tenant.phone.toLowerCase().includes(search.toLowerCase())
+      row.bid_thread_id.toString().includes(search.toLowerCase()) ||
+      row.listing_id.toString().includes(search.toLowerCase()) ||
+      row.amount.toString().includes(search.toLowerCase()),
   );
-  if (property !== "All property") {
-    filteredData = filteredData.filter((row) => row.property.name === property);
-  }
+
   if (status !== "All status") {
-    filteredData = filteredData.filter((row) => row.status.label === status);
+    filteredData = filteredData.filter(
+      (row) => getStatusDisplay(row.status).label === status,
+    );
   }
+
   const paginatedData = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-yellow-400 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-sm text-red-800">{error}</p>
+      </div>
+    );
+  }
+
   const columns = [
     {
-      key: "property",
-      header: "Property",
-      render: (row: any) => (
-        <div className="flex items-center gap-2">
-          <Image src={row.property.image} alt="property" width={40} height={40} className="rounded" />
-          <div>
-            <div className="font-semibold text-sm">{row.property.name}</div>
-            <div className="text-xs text-gray-500">{row.property.location}</div>
-          </div>
+      key: "bid_thread_id",
+      header: "Bid ID",
+      className: "px-6 py-4 font-semibold text-sm",
+    },
+    {
+      key: "listing_id",
+      header: "Listing ID",
+      className: "px-6 py-4 font-semibold text-sm",
+    },
+    {
+      key: "amount",
+      header: "Offer Amount",
+      render: (row: Bid) => (
+        <div className="font-semibold">
+          AED {row.amount.toLocaleString()}/{row.frequency.toLowerCase()}
         </div>
       ),
       className: "px-6 py-4",
     },
     {
-      key: "landlord",
-      header: "Landlord",
-      render: (row: any) => (
-        <>
-          <div className="font-semibold text-sm">{row.landlord.name}</div>
-          <div className="text-xs text-[#018FBD] cursor-pointer">You represent this landlord</div>
-        </>
-      ),
+      key: "installments",
+      header: "Installments",
+      render: (row: Bid) => <span>{row.installments} payments</span>,
       className: "px-6 py-4",
     },
     {
-      key: "tenant",
-      header: "Tenant offer side",
-      render: (row: any) => (
-        <>
-          <div className="font-semibold text-sm">{row.tenant.email}</div>
-          <div className="text-xs text-gray-500">{row.tenant.phone}</div>
-        </>
-      ),
-      className: "px-6 py-4",
-    },
-    {
-      key: "offerAmount",
-      header: "Offer Amount",
-      className: "px-6 py-4",
-    },
-    {
-      key: "type",
-      header: "Type",
-      className: "px-6 py-4",
-    },
-    {
-      key: "submitted",
+      key: "created_at",
       header: "Submitted",
+      render: (row: Bid) => (
+        <span>{new Date(row.created_at).toLocaleDateString()}</span>
+      ),
       className: "px-6 py-4",
     },
     {
       key: "status",
       header: "Status",
-      render: (row: any) => (
-        <span className={`px-3 py-1 rounded-none font-semibold text-xs whitespace-nowrap ${row.status.color}`}>{row.status.label}</span>
-      ),
+      render: (row: Bid) => {
+        const statusDisplay = getStatusDisplay(row.status);
+        return (
+          <span
+            className={`px-3 py-1 rounded-full font-semibold text-xs whitespace-nowrap ${statusDisplay.color}`}
+          >
+            {statusDisplay.label}
+          </span>
+        );
+      },
       className: "px-6 py-4",
     },
     {
@@ -167,7 +150,9 @@ export function BidsTable() {
       <div className="bg-gray-50 rounded-lg">
         <div>
           <h1 className="text-2xl font-bold mb-1">Bids</h1>
-          <p className="text-gray-500 mb-6">Manage offers from tenants for your landlord clients</p>
+          <p className="text-gray-500 mb-6">
+            Manage offers from tenants for your landlord clients
+          </p>
           <div className="flex items-center mb-6">
             <SearchBar
               value={search}
@@ -177,23 +162,15 @@ export function BidsTable() {
             <div className="flex items-center gap-4 ml-6 w-full justify-end">
               <select
                 className="px-4 py-2 bg-gray-50 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                value={property}
-                onChange={e => setProperty(e.target.value)}
-              >
-                <option>All property</option>
-                {Array.from(new Set(bids.map(l => l.property.name))).map(name => (
-                  <option key={name}>{name}</option>
-                ))}
-              </select>
-              <select
-                className="px-4 py-2 bg-gray-50 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
                 value={status}
-                onChange={e => setStatus(e.target.value)}
+                onChange={(e) => setStatus(e.target.value)}
               >
                 <option>All status</option>
                 <option>New</option>
-                <option>Under Review</option>
+                <option>Accepted</option>
                 <option>Countered</option>
+                <option>Rejected</option>
+                <option>Withdrawn</option>
               </select>
             </div>
           </div>

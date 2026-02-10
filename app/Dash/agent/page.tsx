@@ -1,37 +1,97 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { QuickAction } from "@/components/dashboard/quick-action";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
-
-export const metadata = {
-  title: "Agent Dashboard - Property Banana",
-  description: "Agent property management dashboard",
-};
+import { agentService, type AgentPerformance } from "@/api/agent.service";
 
 export default function AgentDashboardPage() {
+  const [performance, setPerformance] = useState<AgentPerformance | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      try {
+        const data = await agentService.getPerformance();
+        setPerformance(data);
+      } catch (error) {
+        console.error("Failed to fetch performance:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPerformance();
+  }, []);
+
   return (
     <>
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Agent Dashboard</h1>
-        <p className="text-muted-foreground pt-2">Welcome Back Albert</p>
+        <p className="text-muted-foreground pt-2">Welcome Back!</p>
       </div>
 
-      <StatsGrid />
-
-      <div className="mt-8 mb-8">
-        <QuickAction />
-      </div>
-
-      <div className="grid grid-cols-3 gap-6 items-start">
-        <div className="col-span-2">
-          <h2 className="text-xl font-bold mb-4">Property Views</h2>
-          <RevenueChart />
+      {loading ? (
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
-          <ActivityFeed />
+      ) : performance ? (
+        <>
+          {/* Performance Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-sm text-gray-600 mb-1">Total Listings</p>
+              <p className="text-3xl font-bold">{performance.totalListings}</p>
+              <p className="text-xs text-green-600 mt-1">
+                {performance.activeListings} active
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-sm text-gray-600 mb-1">Total Tours</p>
+              <p className="text-3xl font-bold">{performance.totalTours}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-sm text-gray-600 mb-1">Bids</p>
+              <p className="text-3xl font-bold">{performance.totalBids}</p>
+              <p className="text-xs text-green-600 mt-1">
+                {performance.approvedBids} approved
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-sm text-gray-600 mb-1">Conversion Rate</p>
+              <p className="text-3xl font-bold">{performance.conversionRate}</p>
+              {performance.averageRating && (
+                <p className="text-xs text-gray-600 mt-1">
+                  ★ {performance.averageRating.toFixed(1)} rating
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8 mb-8">
+            <QuickAction />
+          </div>
+
+          <div className="grid grid-cols-3 gap-6 items-start">
+            <div className="col-span-2">
+              <h2 className="text-xl font-bold mb-4">Property Views</h2>
+              <RevenueChart />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
+              <ActivityFeed />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800">
+            Unable to load performance data
+          </p>
         </div>
-      </div>
+      )}
     </>
   );
 }

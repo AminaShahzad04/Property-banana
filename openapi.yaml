@@ -1,0 +1,1674 @@
+openapi: 3.0.3
+info:
+  title: Property Banana API
+  description: |
+    Complete API documentation for Property Banana - Dubai real estate rental platform.
+    
+    ## Authentication
+    This API uses session-based authentication with AWS Cognito integration.
+    Most endpoints require authentication via session cookies.
+    
+    ## Base URL
+    - Production: `https://api.propertybanana.com`
+    - Development: `http://localhost:3000`
+  version: 2.0.0
+  contact:
+    name: Property Banana Support
+    email: support@propertybanana.com
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.propertybanana.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: AWS Cognito and UAE Pass authentication endpoints
+  - name: Users
+    description: User profile and role management
+  - name: Tenant Dashboard
+    description: Endpoints for tenant users (property search, tours, bids)
+  - name: Landlord Dashboard
+    description: Endpoints for landlord users (property management, listings, tours)
+  - name: Agent Dashboard
+    description: Endpoints for brokerage agents (client management, performance)
+  - name: Brokerage
+    description: Brokerage registration and staff management
+  - name: UAE Pass
+    description: UAE Pass authentication and document signing
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Session cookie obtained after successful authentication
+      
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Required field missing
+            details:
+              type: object
+              
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 10
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        full_name:
+          type: string
+          example: John Doe
+        phone_no:
+          type: string
+          nullable: true
+          example: "+971501234567"
+        whatsapp_no:
+          type: string
+          nullable: true
+          example: "+971501234567"
+        photo_url:
+          type: string
+          nullable: true
+          example: "https://s3.amazonaws.com/..."
+        cognito_user_id:
+          type: string
+          example: "us-east-1_abc123xyz"
+        uaepass_user_id:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SUSPENDED]
+        role_assigned:
+          type: boolean
+          
+    Tour:
+      type: object
+      properties:
+        tour_id:
+          type: integer
+        listing_id:
+          type: integer
+        property_id:
+          type: integer
+        tenant_user_id:
+          type: integer
+        tour_date:
+          type: string
+          format: date
+        time_slot:
+          type: string
+          example: "10:00-11:00"
+        status:
+          type: string
+          enum: [SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED, NO_SHOW]
+        created_at:
+          type: string
+          format: date-time
+          
+    Bid:
+      type: object
+      properties:
+        bid_thread_id:
+          type: integer
+        listing_id:
+          type: integer
+        tenant_user_id:
+          type: integer
+        landlord_user_id:
+          type: integer
+        amount:
+          type: number
+          format: decimal
+          example: 85000.00
+        frequency:
+          type: string
+          enum: [MONTHLY, QUARTERLY, YEARLY]
+        installments:
+          type: integer
+          enum: [2, 4, 8, 10, 12]
+          description: Number of payments for yearly rent
+        status:
+          type: string
+          enum: [OPEN, COUNTER_OFFER, ACCEPTED, REJECTED, WITHDRAWN]
+        created_at:
+          type: string
+          format: date-time
+          
+    Listing:
+      type: object
+      properties:
+        listing_id:
+          type: integer
+        property_id:
+          type: integer
+        landlord_user_id:
+          type: integer
+        agent_user_id:
+          type: integer
+          nullable: true
+        price:
+          type: number
+          format: decimal
+        status:
+          type: string
+          enum: [DRAFT, PENDING_VERIFICATION, ACTIVE, RENTED, INACTIVE]
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        area_sqft:
+          type: number
+        property_type:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+          
+    Brokerage:
+      type: object
+      properties:
+        brokerage_id:
+          type: integer
+        name:
+          type: string
+        trade_license_no:
+          type: string
+        office_registration_no:
+          type: string
+        email:
+          type: string
+          format: email
+        phone_no:
+          type: string
+        owner_user_id:
+          type: integer
+        trade_license_document_url:
+          type: string
+        logo_url:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SUSPENDED]
+
+security:
+  - sessionCookie: []
+
+paths:
+  # ==================
+  # COGNITO AUTHENTICATION
+  # ==================
+  /cognito/login:
+    get:
+      tags:
+        - Authentication
+      summary: Initiate Cognito login
+      description: Redirects to AWS Cognito hosted UI for authentication
+      security: []
+      responses:
+        '302':
+          description: Redirect to Cognito login page
+        '500':
+          description: Server configuration error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /cognito/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Cognito OAuth callback
+      description: Receives authorization code from Cognito and creates session
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Cognito
+      responses:
+        '302':
+          description: Successful authentication, redirect to dashboard
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: connect.sid=s%3A...; Path=/; HttpOnly
+        '400':
+          description: Invalid or missing authorization code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /cognito/logout:
+    get:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Clear session and redirect to Cognito logout
+      responses:
+        '302':
+          description: Redirect to Cognito logout page
+          
+  /cognito/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get authenticated user profile
+      description: Returns current user's profile information from session
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /cognito/status:
+    get:
+      tags:
+        - Authentication
+      summary: Check authentication status
+      description: Check if user is authenticated and return user data
+      security: []
+      responses:
+        '200':
+          description: Authentication status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+                    
+  # ==================
+  # UAE PASS
+  # ==================
+  /uaepass/authorize:
+    get:
+      tags:
+        - UAE Pass
+      summary: Initiate UAE Pass login
+      description: Redirects to UAE Pass authorization page
+      security: []
+      responses:
+        '302':
+          description: Redirect to UAE Pass login
+          
+  /uaepass/callback:
+    get:
+      tags:
+        - UAE Pass
+      summary: UAE Pass OAuth callback
+      description: Receives authorization code and exchanges for access token
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Successful authentication
+          
+  /uaepass/userinfo:
+    get:
+      tags:
+        - UAE Pass
+      summary: Get UAE Pass user info
+      description: Retrieve user profile from UAE Pass using access token
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sub:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  phone_number:
+                    type: string
+                    
+  /uaepass/signature/token:
+    post:
+      tags:
+        - UAE Pass
+      summary: Get signature token
+      description: Obtain access token for document signing operations
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Token obtained successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                    
+  /uaepass/signature/create-process:
+    post:
+      tags:
+        - UAE Pass
+      summary: Create signature process
+      description: Upload PDF document and create signature process
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - document
+              properties:
+                document:
+                  type: string
+                  format: binary
+                  description: PDF file to be signed
+      responses:
+        '200':
+          description: Signature process created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signature_id:
+                    type: string
+                  signer_process_id:
+                    type: string
+                  url:
+                    type: string
+                    description: UAE Pass signing URL
+                    
+  /uaepass/signature/{signature_id}/result:
+    get:
+      tags:
+        - UAE Pass
+      summary: Get signature result
+      description: Check the status of a signature process
+      parameters:
+        - name: signature_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Signature status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [PENDING, SIGNED, REJECTED, EXPIRED]
+                  document_id:
+                    type: string
+                    nullable: true
+                    
+  /uaepass/signature/document/{document_id}:
+    get:
+      tags:
+        - UAE Pass
+      summary: Download signed document
+      description: Retrieve the signed PDF document
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Signed PDF document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+                
+  # ==================
+  # USER ROUTES
+  # ==================
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Get authenticated user's profile information
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+    patch:
+      tags:
+        - Users
+      summary: Update current user profile
+      description: Update authenticated user's profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                phone_no:
+                  type: string
+                whatsapp_no:
+                  type: string
+                photo_url:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+                    
+  /users/me/role-status:
+    get:
+      tags:
+        - Users
+      summary: Get role assignment status
+      description: Check if current user has been assigned a role
+      responses:
+        '200':
+          description: Role status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role_assigned:
+                    type: boolean
+                  roles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        role_id:
+                          type: integer
+                        role_name:
+                          type: string
+                          
+  /users/me/uaepass-status:
+    get:
+      tags:
+        - Users
+      summary: Get UAE Pass connection status
+      description: Check if user has connected their UAE Pass account
+      responses:
+        '200':
+          description: UAE Pass status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connected:
+                    type: boolean
+                  uaepass_user_id:
+                    type: string
+                    nullable: true
+                    
+  /users/assign-role:
+    post:
+      tags:
+        - Users
+      summary: Assign role to current user
+      description: Self-assign a role during onboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role_id
+              properties:
+                role_id:
+                  type: integer
+                  description: Role ID (1=LANDLORD, 2=TENANT, 3=AGENT, 4=MANAGER, 5=OWNER, 6=ADMIN)
+      responses:
+        '200':
+          description: Role assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    
+  /users/without-roles:
+    get:
+      tags:
+        - Users
+      summary: Get users without assigned roles
+      description: Admin endpoint to view users who haven't been assigned roles
+      responses:
+        '200':
+          description: List of users without roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                      
+  # ==================
+  # TENANT DASHBOARD
+  # ==================
+  /dashboard/tenant/my-tours:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get tenant's tours
+      description: Get all tours booked by the authenticated tenant
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED, NO_SHOW]
+      responses:
+        '200':
+          description: List of tours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tours:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tour'
+                      
+  /dashboard/tenant/tours/book:
+    post:
+      tags:
+        - Tenant Dashboard
+      summary: Book a property tour
+      description: Schedule a tour for a property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - propertyId
+                - date
+                - timeSlot
+              properties:
+                propertyId:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+                  example: "2026-02-15"
+                timeSlot:
+                  type: string
+                  example: "10:00-11:00"
+      responses:
+        '201':
+          description: Tour booked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  tour:
+                    $ref: '#/components/schemas/Tour'
+                    
+  /dashboard/tenant/tours/{tourId}:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get tour details
+      description: Get specific tour by ID
+      parameters:
+        - name: tourId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tour details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tour'
+                
+  /dashboard/tenant/tours/{tourId}/cancel:
+    put:
+      tags:
+        - Tenant Dashboard
+      summary: Cancel a tour
+      description: Cancel a scheduled tour
+      parameters:
+        - name: tourId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Tour cancelled successfully
+          
+  /dashboard/tenant/tours/{tourId}/reschedule:
+    put:
+      tags:
+        - Tenant Dashboard
+      summary: Reschedule a tour
+      description: Change tour date/time
+      parameters:
+        - name: tourId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - timeSlot
+              properties:
+                date:
+                  type: string
+                  format: date
+                timeSlot:
+                  type: string
+      responses:
+        '200':
+          description: Tour rescheduled successfully
+          
+  /dashboard/tenant/listings:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Search properties
+      description: Search and filter available rental properties
+      parameters:
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: beds
+          in: query
+          schema:
+            type: integer
+        - name: baths
+          in: query
+          schema:
+            type: integer
+        - name: amenities
+          in: query
+          schema:
+            type: string
+            description: Comma-separated amenity IDs
+      responses:
+        '200':
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+                      
+  /dashboard/tenant/listings/{id}:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get property details
+      description: Get detailed information about a specific property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Property details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+                
+  /dashboard/tenant/listings/{id}/availability:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get tour availability
+      description: Get available time slots for property tours
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Available time slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  availability:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        timeSlots:
+                          type: array
+                          items:
+                            type: string
+                            
+  /dashboard/tenant/bids:
+    post:
+      tags:
+        - Tenant Dashboard
+      summary: Place a bid
+      description: Submit a rental bid on a listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - listing_id
+                - amount
+                - frequency
+                - installments
+              properties:
+                listing_id:
+                  type: integer
+                amount:
+                  type: number
+                  format: decimal
+                  example: 85000.00
+                frequency:
+                  type: string
+                  enum: [MONTHLY, QUARTERLY, YEARLY]
+                installments:
+                  type: integer
+                  enum: [2, 4, 8, 10, 12]
+                  description: Number of payment installments for yearly rent
+      responses:
+        '201':
+          description: Bid placed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  bid:
+                    $ref: '#/components/schemas/Bid'
+                    
+  /dashboard/tenant/my-bids:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get tenant's bids
+      description: Get all bids placed by the authenticated tenant
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, COUNTER_OFFER, ACCEPTED, REJECTED, WITHDRAWN]
+      responses:
+        '200':
+          description: List of bids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bids:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bid'
+                      
+  /dashboard/tenant/bids/{bidThreadId}/history:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get bid history
+      description: Get full bid negotiation thread with all events
+      parameters:
+        - name: bidThreadId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        event_id:
+                          type: integer
+                        event_type:
+                          type: string
+                        amount:
+                          type: number
+                        created_at:
+                          type: string
+                          format: date-time
+                          
+  /dashboard/tenant/bids/{bidThreadId}/withdraw:
+    post:
+      tags:
+        - Tenant Dashboard
+      summary: Withdraw a bid
+      description: Withdraw a previously placed bid
+      parameters:
+        - name: bidThreadId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid withdrawn successfully
+          
+  /dashboard/tenant/listings/{listingId}/bid-suggestions:
+    get:
+      tags:
+        - Tenant Dashboard
+      summary: Get bid suggestions
+      description: Get suggested bid amounts based on market data
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        label:
+                          type: string
+                        amount:
+                          type: number
+                          
+  # ==================
+  # LANDLORD DASHBOARD
+  # ==================
+  /dashboard/landlord/listings/multi-step/step1:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Initialize listing (Step 1)
+      description: Start multi-step listing creation with RERA permit validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rera_permit_no
+              properties:
+                rera_permit_no:
+                  type: string
+                  example: "71234567890123"
+      responses:
+        '201':
+          description: Listing initialized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listing_id:
+                    type: integer
+                  current_step:
+                    type: integer
+                    
+  /dashboard/landlord/listings/multi-step/{listingId}/step2:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Upload documents (Step 2)
+      description: Upload title deed and emirate ID
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - titleDeed
+                - emirateId
+              properties:
+                titleDeed:
+                  type: string
+                  format: binary
+                emirateId:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Documents uploaded successfully
+          
+  /dashboard/landlord/listings/multi-step/{listingId}/step3:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Add property details (Step 3)
+      description: Add property specifications
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bedrooms:
+                  type: integer
+                bathrooms:
+                  type: integer
+                area_sqft:
+                  type: number
+                property_type:
+                  type: string
+                location:
+                  type: string
+      responses:
+        '200':
+          description: Property details saved
+          
+  /dashboard/landlord/listings/multi-step/{listingId}/step5:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Set pricing (Step 5)
+      description: Set rental price and payment terms
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - price
+              properties:
+                price:
+                  type: number
+                  format: decimal
+      responses:
+        '200':
+          description: Pricing saved
+          
+  /dashboard/landlord/listings/{listingId}/publish:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Publish listing
+      description: Publish completed listing for rental
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Listing published successfully
+          
+  /dashboard/landlord/listings:
+    get:
+      tags:
+        - Landlord Dashboard
+      summary: Get landlord's listings
+      description: Get all properties owned by the authenticated landlord
+      responses:
+        '200':
+          description: List of landlord's properties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Listing'
+                      
+  /dashboard/landlord/listings/incomplete:
+    get:
+      tags:
+        - Landlord Dashboard
+      summary: Get incomplete listings
+      description: Get all draft listings that haven't been completed
+      responses:
+        '200':
+          description: List of incomplete listings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        listing_id:
+                          type: integer
+                        current_step:
+                          type: integer
+                        created_at:
+                          type: string
+                          format: date-time
+                          
+  /dashboard/landlord/tours:
+    get:
+      tags:
+        - Landlord Dashboard
+      summary: Get landlord's tours
+      description: Get all tours scheduled for landlord's properties
+      responses:
+        '200':
+          description: List of tours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tours:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tour'
+                      
+  /dashboard/landlord/listings/{listingId}/bids:
+    get:
+      tags:
+        - Landlord Dashboard
+      summary: Get bids for a listing
+      description: Get all bids received for a specific property
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, ACCEPTED, REJECTED, WITHDRAWN]
+      responses:
+        '200':
+          description: List of bids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bids:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bid'
+                      
+  /dashboard/landlord/bids/{bidThreadId}/counter:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Make counter offer
+      description: Counter a tenant's bid with different terms
+      parameters:
+        - name: bidThreadId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - frequency
+                - installments
+              properties:
+                amount:
+                  type: number
+                  format: decimal
+                frequency:
+                  type: string
+                  enum: [MONTHLY, QUARTERLY, YEARLY]
+                installments:
+                  type: integer
+                  enum: [2, 4, 8, 10, 12]
+      responses:
+        '200':
+          description: Counter offer sent
+          
+  /dashboard/landlord/bids/{bidThreadId}/accept:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Accept a bid
+      description: Accept a tenant's rental bid
+      parameters:
+        - name: bidThreadId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid accepted
+          
+  /dashboard/landlord/bids/{bidThreadId}/reject:
+    post:
+      tags:
+        - Landlord Dashboard
+      summary: Reject a bid
+      description: Reject a tenant's rental bid
+      parameters:
+        - name: bidThreadId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid rejected
+          
+  # ==================
+  # AGENT DASHBOARD
+  # ==================
+  /dashboard/agent/bids:
+    get:
+      tags:
+        - Agent Dashboard
+      summary: Get agent's bids
+      description: Get all bids on properties managed by the agent
+      responses:
+        '200':
+          description: List of bids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bids:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bid'
+                      
+  /dashboard/agent/clients:
+    get:
+      tags:
+        - Agent Dashboard
+      summary: Get agent's clients
+      description: Get list of landlords and tenants managed by the agent
+      responses:
+        '200':
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        fullName:
+                          type: string
+                        email:
+                          type: string
+                        phone:
+                          type: string
+                        type:
+                          type: string
+                          enum: [Landlord, Tenant]
+                        propertiesCount:
+                          type: integer
+                        toursCount:
+                          type: integer
+                          
+  /dashboard/agent/performance:
+    get:
+      tags:
+        - Agent Dashboard
+      summary: Get agent performance metrics
+      description: Get performance statistics and KPIs
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalListings:
+                    type: integer
+                  activeListings:
+                    type: integer
+                  totalTours:
+                    type: integer
+                  totalBids:
+                    type: integer
+                  approvedBids:
+                    type: integer
+                  conversionRate:
+                    type: string
+                  averageRating:
+                    type: number
+                    nullable: true
+                    
+  # ==================
+  # BROKERAGE ROUTES
+  # ==================
+  /dashboard/brokerage/create-brokerage:
+    post:
+      tags:
+        - Brokerage
+      summary: Register a brokerage
+      description: |
+        Register a new brokerage company. This is for brokerage owners signing up.
+        Requires multipart/form-data with documents.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - tradeLicenseNo
+                - email
+                - phoneNo
+                - officeRegistrationNo
+                - tradeLicenseDocument
+                - logo
+              properties:
+                name:
+                  type: string
+                  example: "3Shep Real Estate"
+                tradeLicenseNo:
+                  type: string
+                  example: "TL123456789"
+                email:
+                  type: string
+                  format: email
+                  example: "info@3shep.com"
+                phoneNo:
+                  type: string
+                  example: "+971501234567"
+                whatsappNo:
+                  type: string
+                  example: "+971501234567"
+                officeRegistrationNo:
+                  type: string
+                  example: "ORN-12345"
+                tradeLicenseDocument:
+                  type: string
+                  format: binary
+                  description: PDF file of trade license
+                logo:
+                  type: string
+                  format: binary
+                  description: Company logo image
+      responses:
+        '201':
+          description: Brokerage created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  brokerage:
+                    $ref: '#/components/schemas/Brokerage'
+        '400':
+          description: Validation error or brokerage already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /dashboard/brokerage/create-manager:
+    post:
+      tags:
+        - Brokerage
+      summary: Create brokerage manager
+      description: |
+        Create a new manager user for the brokerage. Sends invitation email via AWS Cognito.
+        Only brokerage owners can create managers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - fullName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "manager@3shep.com"
+                fullName:
+                  type: string
+                  example: "John Manager"
+                phoneNumber:
+                  type: string
+                  example: "+971501234567"
+                  description: Optional phone number
+      responses:
+        '201':
+          description: Manager created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                      email:
+                        type: string
+                      full_name:
+                        type: string
+                      cognito_user_id:
+                        type: string
+                      status:
+                        type: string
+        '400':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Must register brokerage first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /dashboard/brokerage/create-agent:
+    post:
+      tags:
+        - Brokerage
+      summary: Create brokerage agent
+      description: |
+        Create a new agent user for the brokerage. Sends invitation email via AWS Cognito.
+        Only brokerage owners can create agents.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - fullName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "agent@3shep.com"
+                fullName:
+                  type: string
+                  example: "Sarah Agent"
+                phoneNumber:
+                  type: string
+                  example: "+971501234567"
+                  description: Optional phone number
+                licenseNumber:
+                  type: string
+                  example: "RERA-2024-001"
+                  description: Optional RERA license number
+      responses:
+        '201':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                      email:
+                        type: string
+                      full_name:
+                        type: string
+                      cognito_user_id:
+                        type: string
+                  agentProfile:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                      brokerage_id:
+                        type: integer
+                      license_number:
+                        type: string
+                        nullable: true
+                      is_verified:
+                        type: boolean
+        '400':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Must register brokerage first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
