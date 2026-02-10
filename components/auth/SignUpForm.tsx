@@ -12,7 +12,12 @@ const roles = [
   { id: 1, name: "Landlord", description: "Property owner", icon: Home },
   { id: 2, name: "Tenant", description: "Looking for property", icon: Users },
   { id: 3, name: "Agent", description: "Real estate agent", icon: Briefcase },
-  { id: 5, name: "Brokerage Owner", description: "Company owner", icon: Building },
+  {
+    id: 5,
+    name: "Brokerage Owner",
+    description: "Company owner",
+    icon: Building,
+  },
 ];
 
 export function SignUpForm() {
@@ -20,7 +25,8 @@ export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +74,8 @@ export function SignUpForm() {
       {/* Information Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          Select your role below, then you'll be directed to AWS Cognito to complete your registration
+          Select your role below, then you'll be directed to AWS Cognito to
+          complete your registration
         </p>
       </div>
 
@@ -97,7 +104,10 @@ export function SignUpForm() {
                 } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon size={18} className={isSelected ? "text-yellow-600" : "text-gray-600"} />
+                  <Icon
+                    size={18}
+                    className={isSelected ? "text-yellow-600" : "text-gray-600"}
+                  />
                   <p className="text-sm font-semibold">{role.name}</p>
                 </div>
                 <p className="text-xs text-gray-500">{role.description}</p>
@@ -106,11 +116,10 @@ export function SignUpForm() {
           })}
         </div>
         {!selectedRole && error && (
-          <p className="text-xs text-red-600 mt-1">Please select a role to continue</p>
+          <p className="text-xs text-red-600 mt-1">
+            Please select a role to continue
+          </p>
         )}
-      </div>
-                  </div>
-        </div>
       </div>
 
       {/* Continue Button */}
@@ -162,13 +171,13 @@ export function SignUpForm() {
           </>
         ) : (
           <>
-            <svg 
-              className="w-5 h-5 mr-2" 
-              viewBox="0 0 24 24" 
+            <svg
+              className="w-5 h-5 mr-2"
+              viewBox="0 0 24 24"
               fill="currentColor"
             >
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
             </svg>
             Sign Up with UAE Pass
           </>

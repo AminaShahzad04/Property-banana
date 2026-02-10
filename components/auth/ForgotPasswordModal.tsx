@@ -38,7 +38,9 @@ export function ForgotPasswordModal({
       await authService.forgotPassword(email);
       setStage("verification");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send reset code");
+      setError(
+        err instanceof Error ? err.message : "Failed to send reset code",
+      );
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ export function ForgotPasswordModal({
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -61,7 +63,11 @@ export function ForgotPasswordModal({
     setError(null);
 
     try {
-      await authService.confirmForgotPassword(email, verificationCode, password);
+      await authService.confirmForgotPassword(
+        email,
+        verificationCode,
+        password,
+      );
       setStage("success");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reset password");
@@ -83,7 +89,7 @@ export function ForgotPasswordModal({
   const handleResendCode = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await authService.forgotPassword(email);
       setError("Verification code resent successfully!");
@@ -121,11 +127,13 @@ export function ForgotPasswordModal({
 
         {/* Error Message */}
         {error && (
-          <div className={`mb-4 p-3 rounded-lg ${
-            error.includes("successfully") 
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : "bg-red-50 border border-red-200 text-red-800"
-          }`}>
+          <div
+            className={`mb-4 p-3 rounded-lg ${
+              error.includes("successfully")
+                ? "bg-green-50 border border-green-200 text-green-800"
+                : "bg-red-50 border border-red-200 text-red-800"
+            }`}
+          >
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -348,71 +356,9 @@ export function ForgotPasswordModal({
               Password Reset Successful!
             </h2>
             <p className="text-sm text-gray-600 mb-8">
-              Your password has been successfully reset. You can now sign in with your new password.
+              Your password has been successfully reset. You can now sign in
+              with your new password.
             </p>
-            <Button
-              onClick={handleClose}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 h-auto"
-            >
-              Back To Login
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 h-auto"
-              >
-                Update
-              </Button>
-
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={handleClose}
-                  className="text-[#008BBC] hover:text-[#008BBC]/80 text-sm font-semibold h-auto p-0"
-                >
-                  Back To Login
-                </Button>
-              </div>
-            </form>
-          </>
-        )}
-
-        {/* Success Stage */}
-        {stage === "success" && (
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Password Updated
-            </h2>
-            <div className="flex justify-center py-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-            </div>
-            <p className="text-gray-600 text-sm">
-              Your password has been updated successfully.
-            </p>
-
             <Button
               onClick={handleClose}
               className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 h-auto"

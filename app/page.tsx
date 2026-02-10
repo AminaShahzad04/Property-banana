@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Header } from "@/components/layout/header";
-import { VideoBackground } from "@/components/general-dashboard/video-background";
+
 import { SearchForm } from "@/components/general-dashboard/search-form";
 import { WhatsAppButton } from "@/components/general-dashboard/whatsapp-button";
 
@@ -12,11 +12,20 @@ export default function HomePage() {
       {/* Header */}
       <Header />
 
-      {/* Video Background */}
-      <VideoBackground />
-
       {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-start min-h-screen  pl-46">
+      <div className="relative z-10 flex items-center justify-start min-h-screen pl-46">
+        {/* Background Image */}
+        <Image
+          src="/hero_background2.jpg"
+          alt="Hero Background"
+          fill
+          priority
+          className="object-cover -z-10"
+          quality={100}
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20 -z-10"></div>
+
         <div className="max-w-4xl">
           <div className="flex flex-col items-start text-left">
             {/* Hero Text */}
