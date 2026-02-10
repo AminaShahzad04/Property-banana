@@ -204,7 +204,7 @@ export function SignUpForm() {
             ) : (
               <>
                 <img
-                  src="/UAEPass_Logo.png"
+                  src="/UAEPASS_Logo.png"
                   alt="UAE Pass Logo"
                   className="h-5 w-auto"
                 />
