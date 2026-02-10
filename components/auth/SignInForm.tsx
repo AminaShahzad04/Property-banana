@@ -181,12 +181,16 @@ export function SignInForm() {
         {/* Sign Up Link */}
         <div className="text-center text-sm">
           <span className="text-gray-600">Don't Have An Account ? </span>
-          <Link
-            href="/sign-up"
-            className="text-[#008BBC] hover:underline font-semibold"
+          <button
+            onClick={() => {
+              setLoading(true);
+              window.location.href = `${API_BASE_URL}/api/cognito/login`;
+            }}
+            className="text-[#008BBC] hover:underline font-semibold bg-transparent border-0 cursor-pointer p-0"
+            disabled={loading}
           >
             Sign Up
-          </Link>
+          </button>
         </div>
       </div>
 

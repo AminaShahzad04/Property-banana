@@ -228,7 +228,9 @@ paths:
       tags:
         - Authentication
       summary: Initiate Cognito login
-      description: Redirects to AWS Cognito hosted UI for authentication
+      description: |
+        Redirects to AWS Cognito hosted UI for authentication.
+        Supports both sign-in and sign-up flows based on the screen parameter.
       security: []
       responses:
         '302':
