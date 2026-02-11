@@ -52,18 +52,9 @@ function SignUpFormContent() {
     setLoading(true);
     setError(null);
 
-    // Validate role selection
-    if (!selectedRole) {
-      setError("Please select your role");
-      setLoading(false);
-      return;
-    }
-
-    // Store the selected role in localStorage to assign after Cognito signup
-    localStorage.setItem("pendingRole", selectedRole);
-
     // Redirect to Cognito Hosted UI for signup
-    // Role selection will be assigned in callback
+    // Backend will redirect to Cognito, which handles sign up
+    // After authentication, user will be prompted to select role
     window.location.href = `${API_BASE_URL}/api/cognito/login`;
   };
 

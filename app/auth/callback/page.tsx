@@ -21,60 +21,19 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        setStatus("Checking user profile...");
+        setStatus("Checking user role...");
 
-        // Check if user has been assigned a role
+        // Get user role from backend
         const roleStatus = await userService.getRoleStatus();
 
         if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
-          // Check if there's a pending role from signup
-          const pendingRole = localStorage.getItem("pendingRole");
-
-          if (pendingRole) {
-            // Assign the role that was selected during signup
-            const roleToAssign = parseInt(pendingRole, 10);
-            setStatus("Assigning your role...");
-
-            try {
-              await userService.assignRole(roleToAssign);
-              localStorage.removeItem("pendingRole");
-
-              // Redirect based on assigned role
-              setStatus("Redirecting to dashboard...");
-              switch (roleToAssign) {
-                case 1:
-                  router.push("/Dash/landlord");
-                  return;
-                case 2:
-                  router.push("/Dash/tenant");
-                  return;
-                case 3:
-                  router.push("/Dash/agent");
-                  return;
-                case 5:
-                  router.push("/Dash/owner");
-                  return;
-                default:
-                  router.push("/");
-                  return;
-              }
-            } catch (error) {
-              console.error("Role assignment failed:", error);
-              setStatus(
-                "Role assignment failed. Redirecting to role selection...",
-              );
-              setTimeout(() => router.push("/auth/select-role"), 2000);
-              return;
-            }
-          } else {
-            // No role in localStorage - redirect to role selection page
-            setStatus("Redirecting to role selection...");
-            router.push("/auth/select-role");
-            return;
-          }
+          // No role assigned - this shouldn't happen if backend assigned role
+          setStatus("Role not found. Redirecting to home...");
+          router.push("/");
+          return;
         }
 
-        // Redirect based on user's primary role
+        // Redirect based on user's role (backend has already assigned it)
         const primaryRole = roleStatus.roles[0];
         setStatus(`Redirecting to ${primaryRole.role_name} dashboard...`);
 
