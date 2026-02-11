@@ -162,6 +162,8 @@ export function RentPropertyModal({
                     width="80"
                     height="20"
                     className={`object-contain ${
+                      index % 2 === 1 ? "scale-y-[-1]" : ""
+                    } ${
                       index + 1 < currentStep ? "" : "grayscale opacity-40"
                     }`}
                   />

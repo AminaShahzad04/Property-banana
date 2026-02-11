@@ -2,9 +2,50 @@
 
 import Image from "next/image";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { userService } from "@/api/user.service";
+import { useState, useEffect } from "react";
 
 export function Header() {
   const { isAuthenticated, logout } = useAuthContext();
+  const [dashboardUrl, setDashboardUrl] = useState("/Dash");
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const roleStatus = await userService.getRoleStatus();
+        if (roleStatus.role_assigned && roleStatus.roles.length > 0) {
+          const primaryRole = roleStatus.roles[0];
+
+          // Map role_id to dashboard URL
+          switch (primaryRole.role_id) {
+            case 1:
+              setDashboardUrl("/Dash/landlord");
+              break;
+            case 2:
+              setDashboardUrl("/Dash/tenant");
+              break;
+            case 3:
+              setDashboardUrl("/Dash/agent");
+              break;
+            case 4:
+              setDashboardUrl("/Dash/manager");
+              break;
+            case 5:
+              setDashboardUrl("/Dash/owner");
+              break;
+            default:
+              setDashboardUrl("/Dash/tenant");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, [isAuthenticated]);
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b shadow-sm z-50">
@@ -36,7 +77,7 @@ export function Header() {
             </a>
             {isAuthenticated && (
               <a
-                href="/Dash"
+                href={dashboardUrl}
                 className="text-sm font-medium text-black hover:text-gray-900"
               >
                 Dashboard

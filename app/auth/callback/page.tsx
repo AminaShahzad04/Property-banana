@@ -27,9 +27,9 @@ export default function AuthCallbackPage() {
         const roleStatus = await userService.getRoleStatus();
 
         if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
-          // No role assigned - this shouldn't happen if backend assigned role
-          setStatus("Role not found. Redirecting to home...");
-          router.push("/");
+          // No role assigned - redirect to tenant dashboard as default
+          setStatus("Redirecting to dashboard...");
+          router.push("/Dash/tenant");
           return;
         }
 
