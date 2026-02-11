@@ -1,7 +1,8 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,7 @@ const roles = [
 ];
 
 export function SignUpForm() {
+  const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("2"); // Default to Tenant
@@ -28,20 +30,31 @@ export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check for error in URL params (from backend redirect)
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam.includes("duplicate") || errorParam.includes("already exists")) {
+        setError("This account already exists. Please sign in instead.");
+      } else {
+        setError("An error occurred during signup. Please try again.");
+      }
+    }
+  }, [searchParams]);
+
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCognitoSignUp = () => {
+    setLoading(true);
     setError(null);
 
     // Validate role selection
     if (!selectedRole) {
       setError("Please select your role");
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     // Store the selected role in localStorage to assign after Cognito signup
     localStorage.setItem("pendingRole", selectedRole);
@@ -64,7 +77,7 @@ export function SignUpForm() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={(e) => { e.preventDefault(); handleCognitoSignUp(); }} className="space-y-5">
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
