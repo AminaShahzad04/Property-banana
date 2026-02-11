@@ -33,12 +33,21 @@ export function SignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validate role selection
+    if (!selectedRole) {
+      setError("Please select your role");
+      return;
+    }
+
     setLoading(true);
 
     // Store the selected role in localStorage to assign after Cognito signup
     localStorage.setItem("pendingRole", selectedRole);
 
     // Redirect to Cognito Hosted UI for signup
+    // Role selection will be assigned in callback
     window.location.href = `${API_BASE_URL}/api/cognito/login`;
   };
 
@@ -56,6 +65,13 @@ export function SignUpForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
         {/* Full Name Field */}
         <div className="space-y-2">
           <Label

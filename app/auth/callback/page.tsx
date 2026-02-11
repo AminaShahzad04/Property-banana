@@ -30,27 +30,18 @@ export default function AuthCallbackPage() {
           // Check if there's a pending role from signup
           const pendingRole = localStorage.getItem("pendingRole");
 
-          // Default to Tenant role (ID: 2) if no role selected
-          const roleToAssign = pendingRole ? parseInt(pendingRole, 10) : 2;
+          if (pendingRole) {
+            // Assign the role that was selected during signup
+            const roleToAssign = parseInt(pendingRole, 10);
+            setStatus("Assigning your role...");
 
-          setStatus("Assigning your role...");
-          try {
-            await userService.assignRole(roleToAssign);
-            if (pendingRole) {
+            try {
+              await userService.assignRole(roleToAssign);
               localStorage.removeItem("pendingRole");
-            }
 
-            // Re-fetch role status after assignment
-            const updatedRoleStatus = await userService.getRoleStatus();
-
-            if (
-              updatedRoleStatus.role_assigned &&
-              updatedRoleStatus.roles.length > 0
-            ) {
-              const primaryRole = updatedRoleStatus.roles[0];
-              setStatus(`Redirecting to ${primaryRole.role_name} dashboard...`);
-
-              switch (primaryRole.role_id) {
+              // Redirect based on assigned role
+              setStatus("Redirecting to dashboard...");
+              switch (roleToAssign) {
                 case 1:
                   router.push("/Dash/landlord");
                   return;
@@ -63,12 +54,22 @@ export default function AuthCallbackPage() {
                 case 5:
                   router.push("/Dash/owner");
                   return;
+                default:
+                  router.push("/");
+                  return;
               }
+            } catch (error) {
+              console.error("Role assignment failed:", error);
+              setStatus(
+                "Role assignment failed. Redirecting to role selection...",
+              );
+              setTimeout(() => router.push("/auth/select-role"), 2000);
+              return;
             }
-          } catch (error) {
-            console.error("Role assignment failed:", error);
-            setStatus("Role assignment failed. Redirecting...");
-            setTimeout(() => router.push("/sign-in"), 2000);
+          } else {
+            // No role in localStorage - redirect to role selection page
+            setStatus("Redirecting to role selection...");
+            router.push("/auth/select-role");
             return;
           }
         }
