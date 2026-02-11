@@ -57,12 +57,14 @@ export default function AuthCallbackPage() {
             router.push("/Dash/admin");
             break;
           default:
-            router.push("/");
+            // Default to tenant dashboard if role_id is unknown
+            router.push("/Dash/tenant");
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        setStatus("Something went wrong. Redirecting...");
-        setTimeout(() => router.push("/sign-in"), 2000);
+        setStatus("Redirecting to dashboard...");
+        // On error, redirect to tenant dashboard as default
+        setTimeout(() => router.push("/"), 2000);
       }
     };
 
