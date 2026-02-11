@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 export function Header() {
   const { isAuthenticated, logout } = useAuthContext();
-  const [dashboardUrl, setDashboardUrl] = useState("/Dash");
+  const [dashboardUrl, setDashboardUrl] = useState("/Dash/tenant");
 
   useEffect(() => {
     const fetchUserRole = async () => {
