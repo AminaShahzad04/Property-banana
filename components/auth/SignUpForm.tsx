@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +18,7 @@ const roles = [
   { id: 5, name: "Brokerage Owner" },
 ];
 
-export function SignUpForm() {
+function SignUpFormContent() {
   const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,7 +34,10 @@ export function SignUpForm() {
   useEffect(() => {
     const errorParam = searchParams.get("error");
     if (errorParam) {
-      if (errorParam.includes("duplicate") || errorParam.includes("already exists")) {
+      if (
+        errorParam.includes("duplicate") ||
+        errorParam.includes("already exists")
+      ) {
         setError("This account already exists. Please sign in instead.");
       } else {
         setError("An error occurred during signup. Please try again.");
@@ -77,7 +80,13 @@ export function SignUpForm() {
       </div>
 
       {/* Form */}
-      <form onSubmit={(e) => { e.preventDefault(); handleCognitoSignUp(); }} className="space-y-5">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleCognitoSignUp();
+        }}
+        className="space-y-5"
+      >
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -275,5 +284,13 @@ export function SignUpForm() {
         </button>
       </div>
     </div>
+  );
+}
+
+export function SignUpForm() {
+  return (
+    <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+      <SignUpFormContent />
+    </Suspense>
   );
 }
