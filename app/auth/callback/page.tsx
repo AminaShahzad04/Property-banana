@@ -24,10 +24,34 @@ export default function AuthCallbackPage() {
         setStatus("Checking user role...");
 
         // Get user role from backend
-        const roleStatus = await userService.getRoleStatus();
+        let roleStatus;
+        try {
+          roleStatus = await userService.getRoleStatus();
+        } catch (error) {
+          // If getRoleStatus fails (403 or any error), assign tenant role
+          console.error("Failed to get role status:", error);
+          setStatus("Assigning default role...");
+          try {
+            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
+            setStatus("Redirecting to dashboard...");
+            router.push("/Dash/tenant");
+            return;
+          } catch (assignError) {
+            console.error("Failed to assign role:", assignError);
+            setStatus("Redirecting to dashboard...");
+            router.push("/Dash/tenant");
+            return;
+          }
+        }
 
         if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
-          // No role assigned - redirect to tenant dashboard as default
+          // No role assigned - assign tenant role and redirect
+          setStatus("Assigning default role...");
+          try {
+            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
+          } catch (assignError) {
+            console.error("Failed to assign role:", assignError);
+          }
           setStatus("Redirecting to dashboard...");
           router.push("/Dash/tenant");
           return;
@@ -64,7 +88,7 @@ export default function AuthCallbackPage() {
         console.error("Auth check failed:", error);
         setStatus("Redirecting to dashboard...");
         // On error, redirect to tenant dashboard as default
-        setTimeout(() => router.push("/"), 2000);
+        router.push("/Dash/tenant");
       }
     };
 
