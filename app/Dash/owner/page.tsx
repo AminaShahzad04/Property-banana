@@ -1,8 +1,12 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { AgentProductivityChart } from "@/components/dashboard/agent-productivity-chart";
 import { PropertiesByStatusChart } from "@/components/dashboard/properties-by-status-chart";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { BidsFunnel } from "@/components/dashboard/bids-funnel";
+import { userService } from "@/api/user.service";
 
 const ownerStats = [
   {
@@ -56,11 +60,30 @@ const ownerStats = [
 ];
 
 export default function OwnerDashboard() {
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const profile = await userService.getMyProfile();
+        setUserData(profile);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Brokerage Dashboard</h1>
-        <p className="text-gray-500">Welcome Back Albert</p>
+        <p className="text-gray-500">
+          Welcome Back {loading ? "..." : userData?.full_name || "Owner"}
+        </p>
       </div>
 
       <DashboardStats stats={ownerStats} columns={4} />

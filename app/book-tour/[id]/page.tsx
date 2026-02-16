@@ -317,6 +317,7 @@ export default function BookTourPage() {
         isOpen={showBookTourModal}
         onOpenChange={setShowBookTourModal}
         propertyTitle={propertyData.name}
+        propertyId={Number(propertyData.id)}
       />
 
       {/* Place Bid Modal */}
@@ -324,6 +325,7 @@ export default function BookTourPage() {
         isOpen={showPlaceBidModal}
         onClose={() => setShowPlaceBidModal(false)}
         propertyTitle={propertyData.name}
+        listingId={Number(propertyData.id)}
         onBidSuccess={() => {
           setShowPlaceBidModal(false);
           setBidApproved(true);

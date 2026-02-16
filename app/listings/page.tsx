@@ -1,15 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { FilterSidebar } from "@/components/listings/filter-sidebar";
 import { PropertyCard } from "@/components/listings/property-card";
 import { WhatsAppButton } from "@/components/general-dashboard/whatsapp-button";
 import { Pagination } from "@/components/ui/Pagination";
+import { tenantService, type Listing } from "@/api/tenant.service";
 
 export default function ListingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({});
+
+  useEffect(() => {
+    fetchListings();
+  }, [filters]);
+
+  const fetchListings = async () => {
+    try {
+      setLoading(true);
+      const response = await tenantService.searchListings(filters);
+      setListings(response.listings);
+    } catch (error) {
+      console.error("Failed to fetch listings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,14 +44,14 @@ export default function ListingsPage() {
 
         <div className="flex gap-6 mt-30">
           {/* Left Sidebar - Filters */}
-          <FilterSidebar />
+          <FilterSidebar onFilterChange={setFilters} />
 
           {/* Right Content - Property Listings */}
           <div className="flex-1">
             {/* Header with count and sorting */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-gray-700 text-base">
-                Showing 1-3 of 3 results
+                Showing {listings.length > 0 ? `1-${listings.length}` : '0'} of {listings.length} results
               </p>
 
               <div className="flex items-center gap-0">
@@ -79,58 +99,50 @@ export default function ListingsPage() {
             </div>
 
             {/* Property Grid */}
-            <div
-              className={`${
-                viewMode === "grid"
-                  ? "grid grid-cols-2 gap-6"
-                  : "flex flex-col gap-6"
-              } mb-8`}
-            >
-              <PropertyCard
-                id="1"
-                title="Peninsula One"
-                location="Business Bay, Dubai, 00000"
-                price="115,000.00"
-                beds={1}
-                baths={1}
-                sqft={576}
-                type="APARTMENT"
-                image="/jumeirah.png"
-                layout={viewMode}
-              />
-              <PropertyCard
-                id="2"
-                title="Expo Golf Villas"
-                location="Emaar South, Dubai, 00000"
-                price="120,000.00"
-                beds={3}
-                baths={4}
-                sqft={1483}
-                type="VILLA"
-                image="/jumeirah.png"
-                layout={viewMode}
-              />
-              <PropertyCard
-                id="3"
-                title="Mudon Al Ranim"
-                location="Mudon, Dubai, 00000"
-                price="280,000.00"
-                beds={4}
-                baths={4}
-                sqft={5086}
-                type="VILLA"
-                image="/jumeirah.png"
-                layout={viewMode}
-              />
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-200 border-t-yellow-500"></div>
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow">
+                <p className="text-gray-600 text-lg mb-2">No properties found</p>
+                <p className="text-sm text-gray-400">Try adjusting your search filters</p>
+              </div>
+            ) : (
+              <div
+                className={`${
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 gap-6"
+                    : "flex flex-col gap-6"
+                } mb-8`}
+              >
+                {listings.map((listing) => (
+                  <PropertyCard
+                    key={listing.listing_id}
+                    id={listing.listing_id.toString()}
+                    title={listing.description || `${listing.property_type} Property`}
+                    location={listing.location}
+                    price={listing.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    beds={listing.bedrooms}
+                    baths={listing.bathrooms}
+                    sqft={listing.area_sqft}
+                    type={listing.property_type}
+                    image="/jumeirah.png"
+                    layout={viewMode}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Pagination */}
-            <Pagination
-              totalRows={3}
-              rowsPerPage={3}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
+            {!loading && listings.length > 0 && (
+              <Pagination
+                totalRows={listings.length}
+                rowsPerPage={10}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </div>
         </div>
       </div>

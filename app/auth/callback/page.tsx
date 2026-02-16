@@ -8,6 +8,7 @@ import { userService } from "@/api/user.service";
 export default function AuthCallbackPage() {
   const router = useRouter();
   const [status, setStatus] = useState("Completing sign in...");
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -20,6 +21,15 @@ export default function AuthCallbackPage() {
           router.push("/sign-in");
           return;
         }
+
+        // Store user name for display
+        const userFullName =
+          response.user.full_name || response.user.email || "User";
+        setUserName(userFullName);
+        setStatus(`Welcome , ${userFullName.split(" ")[0]}!`);
+
+        // Brief delay to show welcome message
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         setStatus("Checking user role...");
 
@@ -104,7 +114,9 @@ export default function AuthCallbackPage() {
             <div className="h-8 w-8 bg-yellow-500 rounded-full opacity-20 animate-ping"></div>
           </div>
         </div>
-        <p className="text-lg font-medium text-gray-900 mb-2">Welcome back!</p>
+        <p className="text-lg font-medium text-gray-900 mb-2">
+          {userName ? `Welcome, ${userName}!` : "Welcome !"}
+        </p>
         <p className="text-sm text-gray-600">{status}</p>
       </div>
     </div>

@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import Image from "next/image";
-import { link } from "fs";
+import { tenantService } from "@/api/tenant.service";
 
 interface PlaceBidModalProps {
   isOpen: boolean;
   onClose: () => void;
   propertyTitle: string;
+  listingId: number;
   initialBids?: number;
   onBidSubmitted?: (newBidsCount: number) => void;
   onBidSuccess?: () => void;
@@ -21,6 +22,7 @@ export function PlaceBidModal({
   isOpen,
   onClose,
   propertyTitle,
+  listingId,
   initialBids = 3,
   onBidSubmitted,
   onBidSuccess,
@@ -29,6 +31,26 @@ export function PlaceBidModal({
   const [bidAmount, setBidAmount] = useState("444,000");
   const [selectedInstallments, setSelectedInstallments] = useState(2);
   const [bidsLeft, setBidsLeft] = useState(initialBids);
+  const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<{label: string; amount: number}[]>([]);
+
+  useEffect(() => {
+    if (isOpen && listingId) {
+      fetchBidSuggestions();
+    }
+  }, [isOpen, listingId]);
+
+  const fetchBidSuggestions = async () => {
+    try {
+      const response = await tenantService.getBidSuggestions(listingId);
+      setSuggestions(response.suggestions);
+      if (response.suggestions.length > 0) {
+        setBidAmount(response.suggestions[0].amount.toLocaleString());
+      }
+    } catch (error) {
+      console.error("Failed to fetch bid suggestions:", error);
+    }
+  };
 
   const suggestedMin = 430000;
   const suggestedMax = 460000;
@@ -87,20 +109,35 @@ export function PlaceBidModal({
     setStep(2);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (bidsLeft === 0) {
       alert("You have no bids left!");
       return;
     }
 
-    const newBidsCount = bidsLeft - 1;
-    setBidsLeft(newBidsCount);
+    try {
+      setLoading(true);
+      await tenantService.placeBid({
+        listing_id: listingId,
+        amount: bidValue,
+        frequency: "YEARLY",
+        installments: selectedInstallments as 2 | 4 | 8 | 10 | 12,
+      });
 
-    if (onBidSubmitted) {
-      onBidSubmitted(newBidsCount);
+      const newBidsCount = bidsLeft - 1;
+      setBidsLeft(newBidsCount);
+
+      if (onBidSubmitted) {
+        onBidSubmitted(newBidsCount);
+      }
+
+      setStep(3);
+    } catch (error) {
+      console.error("Failed to place bid:", error);
+      alert("Failed to place bid. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setStep(3);
   };
 
   const handleClose = () => {

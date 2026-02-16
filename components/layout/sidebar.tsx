@@ -17,7 +17,7 @@ import {
 // Tenant sidebar items
 const tenantMenuItems = [
   { icon: Compass, label: "Dashboard", href: "/Dash/tenant" },
-  { icon: Calendar, label: "Calendar", href: "#" },
+  { icon: Calendar, label: "My Viewings", href: "/Dash/tours" },
 ];
 
 const tenantManageListings = [{ icon: House, label: "My Offers", href: "#" }];

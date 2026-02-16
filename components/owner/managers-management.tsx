@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
+import { brokerageService } from "@/api/brokerage.service";
+import { agentService } from "@/api/agent.service";
 
 interface Manager {
   id: string;
@@ -17,84 +19,69 @@ interface Manager {
   lastActivity: string;
 }
 
-const mockManagers: Manager[] = [
-  {
-    id: "1",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 5,
-    noOfProperties: 5,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "2",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 6,
-    noOfProperties: 6,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "3",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 8,
-    noOfProperties: 8,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "4",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 7,
-    noOfProperties: 7,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "5",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 89,
-    noOfProperties: 89,
-    status: "Suspended",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "6",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 5,
-    noOfProperties: 5,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "7",
-    name: "John albert",
-    email: "abc@gmail.com",
-    contactNumber: "2343-456-66",
-    agents: 3,
-    noOfProperties: 3,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-];
-
 export function ManagersManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [managers, setManagers] = useState<Manager[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = mockManagers.filter((manager) => {
+  useEffect(() => {
+    fetchManagers();
+  }, []);
+
+  const fetchManagers = async () => {
+    try {
+      setLoading(true);
+      // Note: Backend doesn't have a "list managers" endpoint yet
+      // Using agent clients as a demonstration of fetching real data
+      // You'll need a proper /dashboard/brokerage/managers or /dashboard/owner/managers endpoint
+      const response = await agentService.getClients();
+
+      // Transform the data to match our Manager interface
+      const transformedManagers: Manager[] = response.clients
+        .filter((client) => client.type === "Landlord") // Filter for managers/landlords
+        .map((client) => ({
+          id: client.id,
+          name: client.fullName,
+          email: client.email,
+          contactNumber: client.phone,
+          agents: 0, // Backend doesn't provide agent count yet
+          noOfProperties: client.propertiesCount,
+          status: "Active" as const,
+          lastActivity: "N/A", // Backend doesn't provide last activity yet
+        }));
+
+      setManagers(transformedManagers);
+    } catch (error) {
+      console.error("Failed to fetch managers:", error);
+      // Keep empty array on error
+      setManagers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddManager = async () => {
+    // This would open a modal/form to collect manager details
+    // For now, showing the API structure
+    const managerData = {
+      fullName: "Manager Name",
+      email: "manager@example.com",
+      phoneNumber: "+971501234567",
+    };
+
+    try {
+      await brokerageService.createManager(managerData);
+      alert("Manager created successfully!");
+      // Refresh manager list
+      fetchManagers();
+    } catch (error) {
+      console.error("Failed to create manager:", error);
+      alert("Failed to create manager. Please try again.");
+    }
+  };
+
+  const filteredData = managers.filter((manager) => {
     const matchesSearch =
       manager.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       manager.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,7 +164,10 @@ export function ManagersManagement() {
           <h1 className="text-2xl mb-2 font-bold">Managers</h1>
           <p className="text-gray-500 text-sm">Manage your brokerage manager</p>
         </div>
-        <button className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2">
+        <button
+          onClick={handleAddManager}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2"
+        >
           + Add Manager
         </button>
       </div>
@@ -192,13 +182,27 @@ export function ManagersManagement() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <Table columns={columns} data={filteredData} />
-        <Pagination
-          totalRows={256000}
-          rowsPerPage={8}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading managers...</p>
+          </div>
+        ) : managers.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              No managers found. Add your first manager to get started.
+            </p>
+          </div>
+        ) : (
+          <>
+            <Table columns={columns} data={filteredData} />
+            <Pagination
+              totalRows={filteredData.length}
+              rowsPerPage={8}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </>
+        )}
       </div>
     </div>
   );

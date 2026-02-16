@@ -6,31 +6,39 @@ import { QuickAction } from "@/components/dashboard/quick-action";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { agentService, type AgentPerformance } from "@/api/agent.service";
+import { userService } from "@/api/user.service";
 
 export default function AgentDashboardPage() {
   const [performance, setPerformance] = useState<AgentPerformance | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPerformance = async () => {
+    const fetchData = async () => {
       try {
-        const data = await agentService.getPerformance();
-        setPerformance(data);
+        const [perfData, profile] = await Promise.all([
+          agentService.getPerformance(),
+          userService.getMyProfile(),
+        ]);
+        setPerformance(perfData);
+        setUserData(profile);
       } catch (error) {
-        console.error("Failed to fetch performance:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPerformance();
+    fetchData();
   }, []);
 
   return (
     <>
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Agent Dashboard</h1>
-        <p className="text-muted-foreground pt-2">Welcome Back!</p>
+        <p className="text-muted-foreground pt-2">
+          Welcome Back {loading ? "..." : userData?.full_name || "Agent"}!
+        </p>
       </div>
 
       {loading ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Dialog,
@@ -16,22 +16,71 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
+import { tenantService } from "@/api/tenant.service";
 
 interface BookTourModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   propertyTitle: string;
+  propertyId: number;
 }
 
 export function BookTourModal({
   isOpen,
   onOpenChange,
   propertyTitle,
+  propertyId,
 }: BookTourModalProps) {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [loading, setLoading] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen && propertyId) {
+      fetchAvailability();
+    }
+  }, [isOpen, propertyId, currentMonth]);
+
+  const fetchAvailability = async () => {
+    try {
+      const response = await tenantService.getAvailability(
+        propertyId,
+        currentMonth.getMonth() + 1,
+        currentMonth.getFullYear()
+      );
+      // Extract time slots from availability
+      const slots = response.availability.flatMap(day => day.timeSlots);
+      setAvailableSlots(slots);
+    } catch (error) {
+      console.error("Failed to fetch availability:", error);
+    }
+  };
+
+  const handleBookTour = async () => {
+    if (!selectedDate || selectedTime === null) return;
+    
+    try {
+      setLoading(true);
+      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+      const timeSlot = timeSlots[selectedTime].time;
+      
+      await tenantService.bookTour({
+        propertyId,
+        date: dateStr,
+        timeSlot,
+      });
+      
+      setStep(3);
+    } catch (error) {
+      console.error("Failed to book tour:", error);
+      alert("Failed to book tour. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -81,8 +130,8 @@ export function BookTourModal({
   const handleNext = () => {
     if (step === 1 && selectedDate) {
       setStep(2);
-    } else if (step === 2 && selectedTime) {
-      setStep(3);
+    } else if (step === 2 && selectedTime !== null) {
+      handleBookTour();
     }
   };
 

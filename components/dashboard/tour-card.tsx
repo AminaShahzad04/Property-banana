@@ -5,6 +5,7 @@ import { Calendar, Clock, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { WriteReviewModal } from "@/components/dashboard/write-review-modal";
+import { tenantService } from "@/api/tenant.service";
 
 interface TourCardProps {
   id: string;
@@ -17,9 +18,11 @@ interface TourCardProps {
   badgeColor?: "yellow" | "blue";
   status: "upcoming" | "cancelled" | "rescheduled" | "completed";
   errorMessage?: string;
+  onTourUpdated?: () => void;
 }
 
 export function TourCard({
+  id,
   title,
   image,
   date,
@@ -29,8 +32,33 @@ export function TourCard({
   badgeColor,
   status,
   errorMessage,
+  onTourUpdated,
 }: TourCardProps) {
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleCancelTour = async () => {
+    if (!confirm("Are you sure you want to cancel this tour?")) return;
+    
+    try {
+      setLoading(true);
+      await tenantService.cancelTour(parseInt(id), "User requested cancellation");
+      alert("Tour cancelled successfully");
+      if (onTourUpdated) onTourUpdated();
+    } catch (error) {
+      console.error("Failed to cancel tour:", error);
+      alert("Failed to cancel tour. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRescheduleTour = async () => {
+    // This would typically open a reschedule modal
+    // For now, just showing alert
+    alert("Reschedule functionality - opens date/time picker");
+    // await tenantService.rescheduleTour(parseInt(id), { date: newDate, timeSlot: newTime });
+  };
 
   const badgeStyles = {
     yellow: "bg-yellow-400 text-black",
@@ -97,6 +125,8 @@ export function TourCard({
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={handleRescheduleTour}
+                  disabled={loading}
                   className="flex-1 bg-yellow-400 text-black hover:bg-[#008BBC]/10"
                 >
                   Reschedule
@@ -104,9 +134,11 @@ export function TourCard({
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={handleCancelTour}
+                  disabled={loading}
                   className="flex-1 border-black text-black hover:bg-[#008BBC]/10"
                 >
-                  Cancel
+                  {loading ? "Cancelling..." : "Cancel"}
                 </Button>
               </>
             )}
@@ -116,6 +148,8 @@ export function TourCard({
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={handleRescheduleTour}
+                  disabled={loading}
                   className="flex-1 bg-yellow-400 text-black hover:bg-[#008BBC]/10"
                 >
                   Reschedule
@@ -134,9 +168,11 @@ export function TourCard({
               <Button
                 variant="outline"
                 size="sm"
+                onClick={handleCancelTour}
+                disabled={loading}
                 className="w-1/2 bg-yellow-400 text-black hover:bg-[#008BBC]/10"
               >
-                Cancel
+                {loading ? "Cancelling..." : "Cancel"}
               </Button>
             )}
           </div>

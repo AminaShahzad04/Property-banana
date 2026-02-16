@@ -25,7 +25,7 @@ export function BrokerageSettings() {
       alert("Please upload a logo file.");
       return;
     }
-
+    
     try {
       setLoading(true);
       await brokerageService.createBrokerage({

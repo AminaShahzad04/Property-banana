@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export function FilterSidebar() {
+interface FilterSidebarProps {
+  onFilterChange?: (filters: any) => void;
+}
+
+export function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const [propertyTypes, setPropertyTypes] = useState({
     all: true,
     house: false,
@@ -13,7 +17,55 @@ export function FilterSidebar() {
 
   const [bedrooms, setBedrooms] = useState("any");
   const [bathrooms, setBathrooms] = useState("any");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [sqftMin, setSqftMin] = useState("");
+  const [sqftMax, setSqftMax] = useState("");
+  const [yearMin, setYearMin] = useState("");
+  const [yearMax, setYearMax] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showOtherFeatures, setShowOtherFeatures] = useState(false);
+
+  const handleSearch = () => {
+    const selectedTypes = Object.keys(propertyTypes)
+      .filter((key) => propertyTypes[key as keyof typeof propertyTypes] && key !== "all")
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1));
+
+    const filters: any = {};
+
+    if (searchQuery) filters.search = searchQuery;
+    if (selectedTypes.length > 0 && !propertyTypes.all) filters.property_type = selectedTypes.join(",");
+    if (bedrooms !== "any") filters.bedrooms = bedrooms === "5+" ? "5" : bedrooms;
+    if (bathrooms !== "any") filters.bathrooms = bathrooms;
+    if (priceMin) filters.price_min = parseFloat(priceMin.replace(/,/g, ""));
+    if (priceMax) filters.price_max = parseFloat(priceMax.replace(/,/g, ""));
+    if (sqftMin) filters.area_min = parseFloat(sqftMin.replace(/,/g, ""));
+    if (sqftMax) filters.area_max = parseFloat(sqftMax.replace(/,/g, ""));
+    if (yearMin) filters.year_built_min = parseInt(yearMin);
+    if (yearMax) filters.year_built_max = parseInt(yearMax);
+
+    onFilterChange?.(filters);
+  };
+
+  const handleReset = () => {
+    setPropertyTypes({
+      all: true,
+      house: false,
+      flat: false,
+      building: false,
+      villa: false,
+    });
+    setBedrooms("any");
+    setBathrooms("any");
+    setPriceMin("");
+    setPriceMax("");
+    setSqftMin("");
+    setSqftMax("");
+    setYearMin("");
+    setYearMax("");
+    setSearchQuery("");
+    onFilterChange?.({});
+  };
 
   return (
     <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 h-fit sticky top-24 overflow-hidden">
@@ -38,6 +90,8 @@ export function FilterSidebar() {
         <input
           type="text"
           placeholder="What are you looking for?"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1 min-w-0 outline-none text-black"
         />
       </div>
@@ -84,12 +138,16 @@ export function FilterSidebar() {
           <input
             type="text"
             placeholder="Dhs 0"
+            value={priceMin}
+            onChange={(e) => setPriceMin(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-base"
           />
           <span className="text-gray-500 flex-shrink-0 text-base">-</span>
           <input
             type="text"
             placeholder="Dhs 5,000,000"
+            value={priceMax}
+            onChange={(e) => setPriceMax(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-base"
           />
         </div>
@@ -142,12 +200,16 @@ export function FilterSidebar() {
           <input
             type="text"
             placeholder="Min."
+            value={sqftMin}
+            onChange={(e) => setSqftMin(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
           />
           <span className="text-gray-500 flex-shrink-0">-</span>
           <input
             type="text"
             placeholder="Max"
+            value={sqftMax}
+            onChange={(e) => setSqftMax(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
           />
         </div>
@@ -160,12 +222,16 @@ export function FilterSidebar() {
           <input
             type="text"
             placeholder="2019"
+            value={yearMin}
+            onChange={(e) => setYearMin(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
           />
           <span className="text-gray-500 flex-shrink-0">-</span>
           <input
             type="text"
             placeholder="2022"
+            value={yearMax}
+            onChange={(e) => setYearMax(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg text-sm"
           />
         </div>
@@ -194,6 +260,7 @@ export function FilterSidebar() {
 
       {/* Search Button */}
       <button
+        onClick={handleSearch}
         className="w-full py-3 rounded-xl font-semibold text-base mb-4 flex items-center justify-center gap-2"
         style={{ backgroundColor: "#FBDE02" }}
       >
@@ -215,7 +282,7 @@ export function FilterSidebar() {
 
       {/* Footer Links */}
       <div className="flex items-center justify-between text-sm flex-wrap gap-2">
-        <button className="flex items-center gap-1 text-gray-600 hover:text-gray-900">
+        <button onClick={handleReset} className="flex items-center gap-1 text-gray-600 hover:text-gray-900">
           <svg
             className="w-4 h-4"
             fill="none"

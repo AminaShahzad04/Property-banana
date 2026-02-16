@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
+import { brokerageService } from "@/api/brokerage.service";
+import { agentService } from "@/api/agent.service";
 
 interface Agent {
   id: string;
@@ -17,84 +19,68 @@ interface Agent {
   lastActivity: string;
 }
 
-const mockAgents: Agent[] = [
-  {
-    id: "1",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 5,
-    noOfTours: 5,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "2",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 6,
-    noOfTours: 6,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "3",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 8,
-    noOfTours: 8,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "4",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 7,
-    noOfTours: 7,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "5",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 89,
-    noOfTours: 89,
-    status: "Suspended",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "6",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 5,
-    noOfTours: 5,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-  {
-    id: "7",
-    agent: "Aimed Al Maktoon",
-    manager: "Aimed Al Maktoon",
-    brnNumber: "BRN-324343",
-    noOfProperties: 3,
-    noOfTours: 3,
-    status: "Active",
-    lastActivity: "2 days ago",
-  },
-];
-
 export function AgentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = mockAgents.filter((agent) => {
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const fetchAgents = async () => {
+    try {
+      setLoading(true);
+      // Note: Backend doesn't have a "list agents" endpoint yet
+      // Using agent clients as a demonstration of fetching real data
+      // You'll need a proper /dashboard/brokerage/agents or /dashboard/owner/agents endpoint
+      const response = await agentService.getClients();
+      
+      // Transform the data to match our Agent interface
+      const transformedAgents: Agent[] = response.clients.map((client, index) => ({
+        id: client.id,
+        agent: client.fullName,
+        manager: "N/A", // Backend doesn't provide manager info yet
+        brnNumber: "N/A", // Backend doesn't provide BRN number yet
+        noOfProperties: client.propertiesCount,
+        noOfTours: client.toursCount,
+        status: "Active" as const,
+        lastActivity: "N/A", // Backend doesn't provide last activity yet
+      }));
+      
+      setAgents(transformedAgents);
+    } catch (error) {
+      console.error("Failed to fetch agents:", error);
+      // Keep empty array on error
+      setAgents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddAgent = async () => {
+    // This would open a modal/form to collect agent details
+    // For now, showing the API structure
+    const agentData = {
+      fullName: "Agent Name",
+      email: "agent@example.com",
+      phoneNumber: "+971501234567",
+      licenseNumber: "BRN123456",
+    };
+
+    try {
+      await brokerageService.createAgent(agentData);
+      alert("Agent created successfully!");
+      // Refresh agent list
+      fetchAgents();
+    } catch (error) {
+      console.error("Failed to create agent:", error);
+      alert("Failed to create agent. Please try again.");
+    }
+  };
+
+  const filteredData = agents.filter((agent) => {
     const matchesSearch =
       agent.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agent.manager.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,7 +169,10 @@ export function AgentManagement() {
             Manage your brokerage agents
           </p>
         </div>
-        <button className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2">
+        <button
+          onClick={handleAddAgent}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2"
+        >
           + Add Agent
         </button>
       </div>
@@ -198,13 +187,25 @@ export function AgentManagement() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <Table columns={columns} data={filteredData} />
-        <Pagination
-          totalRows={256000}
-          rowsPerPage={8}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading agents...</p>
+          </div>
+        ) : agents.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No agents found. Add your first agent to get started.</p>
+          </div>
+        ) : (
+          <>
+            <Table columns={columns} data={filteredData} />
+            <Pagination
+              totalRows={filteredData.length}
+              rowsPerPage={8}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </>
+        )}
       </div>
     </div>
   );

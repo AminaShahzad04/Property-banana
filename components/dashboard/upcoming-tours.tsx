@@ -50,7 +50,7 @@ export function UpcomingTours() {
           className="text-sm font-medium underline"
           style={{ color: "#018FBD" }}
         >
-          View All Tours
+          View All
         </Link>
       </div>
       {tours.length === 0 ? (

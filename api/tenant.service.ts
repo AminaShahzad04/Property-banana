@@ -12,6 +12,10 @@ export interface Tour {
   time_slot: string;
   status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "RESCHEDULED" | "NO_SHOW";
   created_at: string;
+  // Property details (if backend includes them)
+  property_image?: string;
+  property_title?: string;
+  property_location?: string;
 }
 
 export interface Bid {
