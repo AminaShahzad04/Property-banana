@@ -40,7 +40,7 @@ export default function LandlordDashboardPage() {
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Property Dashboard</h1>
         <p className="text-muted-foreground pt-2">
-          Welcome Back {loading ? "..." : userData?.full_name || "Landlord"}
+          Welcome {loading ? "..." : userData?.full_name || "Landlord"}
         </p>
       </div>
 

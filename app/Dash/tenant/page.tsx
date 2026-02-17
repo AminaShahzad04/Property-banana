@@ -30,7 +30,7 @@ export default function TenantDashboardPage() {
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Tenant Dashboard</h1>
         <p className="text-muted-foreground pt-2">
-          Welcome Back {loading ? "..." : userData?.full_name || "Tenant"}
+          Welcome Back {loading ? "..." : userData?.user?.full_name || "Tenant"}
         </p>
       </div>
 

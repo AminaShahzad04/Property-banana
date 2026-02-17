@@ -82,7 +82,7 @@ export default function OwnerDashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Brokerage Dashboard</h1>
         <p className="text-gray-500">
-          Welcome Back {loading ? "..." : userData?.full_name || "Owner"}
+          Welcome {loading ? "..." : userData?.full_name || "Owner"}
         </p>
       </div>
 

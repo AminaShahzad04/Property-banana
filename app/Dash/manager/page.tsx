@@ -35,7 +35,7 @@ export default function ManagerDashboardPage() {
     <>
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Manager Dashboard</h1>
-        <p className="text-muted-foreground pt-2">Welcome Back Albert</p>
+        <p className="text-muted-foreground pt-2">Welcome Albert</p>
       </div>
 
       <DashboardStats stats={managerStats} columns={3} />

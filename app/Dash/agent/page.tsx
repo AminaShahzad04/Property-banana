@@ -37,7 +37,7 @@ export default function AgentDashboardPage() {
       <div className="mb-8 p-2">
         <h1 className="text-3xl font-bold">Agent Dashboard</h1>
         <p className="text-muted-foreground pt-2">
-          Welcome Back {loading ? "..." : userData?.full_name || "Agent"}!
+          Welcome {loading ? "..." : userData?.full_name || "Agent"}!
         </p>
       </div>
 
