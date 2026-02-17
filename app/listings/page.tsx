@@ -13,7 +13,7 @@ export default function ListingsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   useEffect(() => {
     fetchListings();
@@ -22,29 +22,85 @@ export default function ListingsPage() {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const response = await tenantService.searchListings(filters);
+      // Map filters to backend query params for both endpoints
+      const mappedFilters: any = {};
+      if (filters) {
+        // Map sidebar filter keys to backend keys
+        if (filters.location) mappedFilters.location = filters.location;
+        if (filters.property_type) mappedFilters.name = filters.property_type;
+        if (filters.bedrooms) mappedFilters.beds = filters.bedrooms;
+        if (filters.bathrooms) mappedFilters.baths = filters.bathrooms;
+        if (filters.price_min) mappedFilters.minPrice = filters.price_min;
+        if (filters.price_max) mappedFilters.maxPrice = filters.price_max;
+        if (filters.area_min)
+          mappedFilters.property_size_min = filters.area_min;
+        if (filters.area_max)
+          mappedFilters.property_size_max = filters.area_max;
+        if (filters.search) mappedFilters.search = filters.search;
+        // Add other mappings as needed
+      }
+      const response = await tenantService.searchListings(mappedFilters);
       let data: Listing[] = [];
       if (Array.isArray(response.listings)) {
         data = response.listings;
       } else if (Array.isArray((response as any).properties)) {
         // Map backend 'properties' to Listing interface
-        data = (response as any).properties.map((p: any) => ({
-          listing_id: p.id || p.listing_id || "",
-          property_id: "", // Not provided
-          landlord_user_id: "", // Not provided
-          agent_user_id: null, // Not provided
-          price: parseFloat(p.price_annual) || 0,
-          status: "ACTIVE", // Default/fallback
-          bedrooms: p.beds || 0,
-          bathrooms: p.baths || 0,
-          area_sqft: parseFloat(p.property_size) || 0,
-          property_type: p.name || "",
-          location: p.location || "",
-          description: p.name || "",
-          image: p.image || "",
-          rating: p.rating || null,
-          reviews: p.reviews || 0,
-        }));
+        data = (response as any).properties
+          .filter((p: any) => {
+            // Apply client-side filtering if backend doesn't filter
+            let match = true;
+            if (filters.location && p.location !== filters.location)
+              match = false;
+            if (filters.property_type && p.name !== filters.property_type)
+              match = false;
+            if (filters.bedrooms && p.beds !== Number(filters.bedrooms))
+              match = false;
+            if (filters.bathrooms && p.baths !== Number(filters.bathrooms))
+              match = false;
+            if (
+              filters.price_min &&
+              parseFloat(p.price_annual) < Number(filters.price_min)
+            )
+              match = false;
+            if (
+              filters.price_max &&
+              parseFloat(p.price_annual) > Number(filters.price_max)
+            )
+              match = false;
+            if (
+              filters.area_min &&
+              parseFloat(p.property_size) < Number(filters.area_min)
+            )
+              match = false;
+            if (
+              filters.area_max &&
+              parseFloat(p.property_size) > Number(filters.area_max)
+            )
+              match = false;
+            if (
+              filters.search &&
+              !p.name.toLowerCase().includes(filters.search.toLowerCase())
+            )
+              match = false;
+            return match;
+          })
+          .map((p: any) => ({
+            listing_id: p.id || p.listing_id || "",
+            property_id: "", // Not provided
+            landlord_user_id: "", // Not provided
+            agent_user_id: null, // Not provided
+            price: parseFloat(p.price_annual) || 0,
+            status: "ACTIVE", // Default/fallback
+            bedrooms: p.beds || 0,
+            bathrooms: p.baths || 0,
+            area_sqft: parseFloat(p.property_size) || 0,
+            property_type: p.name || "",
+            location: p.location || "",
+            description: p.name || "",
+            image: p.image || "",
+            rating: p.rating || null,
+            reviews: p.reviews || 0,
+          }));
       }
       setListings(data);
     } catch (error) {
@@ -146,24 +202,30 @@ export default function ListingsPage() {
                 } mb-8`}
               >
                 {listings.map((listing) => (
-                  <PropertyCard
-                    key={listing.listing_id}
-                    id={listing.listing_id.toString()}
-                    title={
-                      listing.description || `${listing.property_type} Property`
-                    }
-                    location={listing.location}
-                    price={listing.price.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                    beds={listing.bedrooms}
-                    baths={listing.bathrooms}
-                    sqft={listing.area_sqft}
-                    type={listing.property_type}
-                    image={listing.image || ""}
-                    layout={viewMode}
-                  />
+                  <a
+                    href={`/book-tour/${listing.listing_id}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <PropertyCard
+                      key={listing.listing_id}
+                      id={listing.listing_id.toString()}
+                      title={
+                        listing.description ||
+                        `${listing.property_type} Property`
+                      }
+                      location={listing.location}
+                      price={listing.price.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                      beds={listing.bedrooms}
+                      baths={listing.bathrooms}
+                      sqft={listing.area_sqft}
+                      type={listing.property_type}
+                      image={listing.image || ""}
+                      layout={viewMode}
+                    />
+                  </a>
                 ))}
               </div>
             )}
