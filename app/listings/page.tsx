@@ -23,9 +23,33 @@ export default function ListingsPage() {
     try {
       setLoading(true);
       const response = await tenantService.searchListings(filters);
-      setListings(response.listings);
+      let data: Listing[] = [];
+      if (Array.isArray(response.listings)) {
+        data = response.listings;
+      } else if (Array.isArray((response as any).properties)) {
+        // Map backend 'properties' to Listing interface
+        data = (response as any).properties.map((p: any) => ({
+          listing_id: p.id || p.listing_id || "",
+          property_id: "", // Not provided
+          landlord_user_id: "", // Not provided
+          agent_user_id: null, // Not provided
+          price: parseFloat(p.price_annual) || 0,
+          status: "ACTIVE", // Default/fallback
+          bedrooms: p.beds || 0,
+          bathrooms: p.baths || 0,
+          area_sqft: parseFloat(p.property_size) || 0,
+          property_type: p.name || "",
+          location: p.location || "",
+          description: p.name || "",
+          image: p.image || "",
+          rating: p.rating || null,
+          reviews: p.reviews || 0,
+        }));
+      }
+      setListings(data);
     } catch (error) {
       console.error("Failed to fetch listings:", error);
+      setListings([]); // Ensure it's always an array on error
     } finally {
       setLoading(false);
     }
@@ -51,7 +75,8 @@ export default function ListingsPage() {
             {/* Header with count and sorting */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-gray-700 text-base">
-                Showing {listings.length > 0 ? `1-${listings.length}` : '0'} of {listings.length} results
+                Showing {listings.length > 0 ? `1-${listings.length}` : "0"} of{" "}
+                {listings.length} results
               </p>
 
               <div className="flex items-center gap-0">
@@ -105,8 +130,12 @@ export default function ListingsPage() {
               </div>
             ) : listings.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg shadow">
-                <p className="text-gray-600 text-lg mb-2">No properties found</p>
-                <p className="text-sm text-gray-400">Try adjusting your search filters</p>
+                <p className="text-gray-600 text-lg mb-2">
+                  No properties found
+                </p>
+                <p className="text-sm text-gray-400">
+                  Try adjusting your search filters
+                </p>
               </div>
             ) : (
               <div
@@ -120,14 +149,19 @@ export default function ListingsPage() {
                   <PropertyCard
                     key={listing.listing_id}
                     id={listing.listing_id.toString()}
-                    title={listing.description || `${listing.property_type} Property`}
+                    title={
+                      listing.description || `${listing.property_type} Property`
+                    }
                     location={listing.location}
-                    price={listing.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    price={listing.price.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                     beds={listing.bedrooms}
                     baths={listing.bathrooms}
                     sqft={listing.area_sqft}
                     type={listing.property_type}
-                    image="/jumeirah.png"
+                    image={listing.image || ""}
                     layout={viewMode}
                   />
                 ))}

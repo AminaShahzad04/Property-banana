@@ -35,12 +35,18 @@ export function PropertyCard({
         <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer flex group">
           {/* Image Container - Left Side */}
           <div className="relative w-[360px] h-[220px] flex-shrink-0 overflow-hidden">
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+            {image ? (
+              <Image
+                src={image}
+                alt={title}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                No Image
+              </div>
+            )}
             {/* Property Type Badge */}
             <div
               className="absolute top-4 left-4 px-4 py-1.5 rounded-md font-bold text-white text-sm flex items-center gap-1 transition-all duration-500 group-hover:translate-y-2 group-hover:opacity-0"
@@ -106,12 +112,18 @@ export function PropertyCard({
       <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
         {/* Image Container */}
         <div className="relative h-52 overflow-hidden">
-          <Image
-            src={image}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-          />
+          {image ? (
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
           {/* Property Type Badge */}
           <div
             className="absolute top-4 left-4 px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-1 transition-all duration-500 group-hover:translate-y-2 group-hover:opacity-0"

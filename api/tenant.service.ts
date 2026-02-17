@@ -43,6 +43,9 @@ export interface Listing {
   property_type: string;
   location: string;
   description: string;
+  image?: string;
+  rating?: number | null;
+  reviews?: number;
 }
 
 export const tenantService = {
