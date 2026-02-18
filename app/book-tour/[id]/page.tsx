@@ -195,7 +195,9 @@ export default function BookTourPage() {
 
                   {/* Right - Title and Process Flow */}
                   <div className="flex-1 ml-6">
-                    <h3 className="text-2xl ml-8 font-bold mb-4">Self view</h3>
+                    <h3 className="text-2xl ml-8 font-bold mb-4">
+                      Book a tour
+                    </h3>
                     <div className="flex items-center justify-center ">
                       {/* Step 1 - Calendar */}
                       <div className="flex items-center justify-center">

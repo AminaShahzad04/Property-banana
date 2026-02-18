@@ -42,7 +42,7 @@ export function PropertyHeader({
               onClick={onBookTour}
               className="bg-yellow-400 text-black hover:bg-yellow-500 px-6"
             >
-              Book A Tour
+              Self View
             </Button>
           </div>
         </div>
