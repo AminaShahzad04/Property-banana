@@ -165,12 +165,17 @@ export default function AuthCallbackPage() {
         // User has an assigned role - redirect based on it
         if (roleStatus.roles && roleStatus.roles.length > 0) {
           const primaryRole = roleStatus.roles[0];
-          console.log("✅ [AUTH CALLBACK] User has assigned role:", primaryRole);
+          console.log(
+            "✅ [AUTH CALLBACK] User has assigned role:",
+            primaryRole,
+          );
           setStatus(`Redirecting to ${primaryRole.role_name} dashboard...`);
 
           switch (primaryRole.role_id) {
             case 1: // LANDLORD
-              console.log("🏠 [AUTH CALLBACK] Redirecting to landlord dashboard");
+              console.log(
+                "🏠 [AUTH CALLBACK] Redirecting to landlord dashboard",
+              );
               router.push("/Dash/landlord");
               break;
             case 2: // TENANT
@@ -182,7 +187,9 @@ export default function AuthCallbackPage() {
               router.push("/Dash/agent");
               break;
             case 4: // MANAGER
-              console.log("🏠 [AUTH CALLBACK] Redirecting to manager dashboard");
+              console.log(
+                "🏠 [AUTH CALLBACK] Redirecting to manager dashboard",
+              );
               router.push("/Dash/manager");
               break;
             case 5: // OWNER (Brokerage Owner)
@@ -201,10 +208,19 @@ export default function AuthCallbackPage() {
               );
               router.push("/");
           }
-        } else {
-          // Role assigned but no roles array - redirect to select role
+        } else if (roleStatus.role_assigned) {
+          // Role assigned but roles array missing - backend response inconsistency
+          // Default to tenant dashboard since we can't determine specific role
           console.warn(
-            "⚠️ [AUTH CALLBACK] Role assigned but no roles array. Redirecting to select role.",
+            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing from backend response.",
+          );
+          console.log("🏠 [AUTH CALLBACK] Defaulting to tenant dashboard");
+          setStatus("Redirecting to dashboard...");
+          router.push("/Dash/tenant");
+        } else {
+          // Role not assigned and no roles array - redirect to select role
+          console.warn(
+            "⚠️ [AUTH CALLBACK] No role assigned. Redirecting to select role.",
           );
           router.push("/auth/select-role");
         }
