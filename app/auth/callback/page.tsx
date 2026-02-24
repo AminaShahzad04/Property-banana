@@ -56,16 +56,16 @@ export default function AuthCallbackPage() {
           );
         } catch (error) {
           console.error(
-            "❌ [AUTH CALLBACK] FAILED TO GET ROLE STATUS - THIS IS WHY USER IS LOGGED OUT",
+            "❌ [AUTH CALLBACK] FAILED TO GET ROLE STATUS - Redirecting to select role page",
           );
           console.error("Error details:", error);
           console.error(
             "Error type:",
             error instanceof Error ? error.message : String(error),
           );
-          setStatus("Error checking role. Logging out...");
+          setStatus("Error checking role. Please select a role...");
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          authService.redirectToLogout();
+          router.push("/auth/select-role");
           return;
         }
 
@@ -154,35 +154,14 @@ export default function AuthCallbackPage() {
             }
           }
 
-          // No pending role or assignment failed - assign default tenant role
+          // No pending role or assignment failed - redirect to select role page
           console.log(
-            "🔄 [AUTH CALLBACK] No pending role. Assigning default TENANT role (role_id: 2)",
+            "🔄 [AUTH CALLBACK] No pending role. Redirecting to role selection page",
           );
-          setStatus("Assigning default tenant role...");
-          try {
-            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
-            console.log(
-              "✅ [AUTH CALLBACK] Default TENANT role assigned successfully",
-            );
-            setStatus("Redirecting to dashboard...");
-            router.push("/Dash/tenant");
-            return;
-          } catch (assignError) {
-            console.error(
-              "❌ [AUTH CALLBACK] FAILED TO ASSIGN DEFAULT TENANT ROLE - THIS IS WHY USER IS LOGGED OUT",
-            );
-            console.error("Error details:", assignError);
-            console.error(
-              "Error type:",
-              assignError instanceof Error
-                ? assignError.message
-                : String(assignError),
-            );
-            setStatus("Error assigning role. Logging out...");
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            authService.redirectToLogout();
-            return;
-          }
+          setStatus("Please select your role...");
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          router.push("/auth/select-role");
+          return;
         }
 
         // User has an assigned role - redirect based on it
@@ -225,7 +204,7 @@ export default function AuthCallbackPage() {
         }
       } catch (error) {
         console.error(
-          "❌ [AUTH CALLBACK] CRITICAL ERROR - THIS IS WHY USER IS LOGGED OUT",
+          "❌ [AUTH CALLBACK] CRITICAL ERROR - Redirecting to select role page",
         );
         console.error("Error details:", error);
         console.error(
@@ -236,9 +215,9 @@ export default function AuthCallbackPage() {
           "Error stack:",
           error instanceof Error ? error.stack : "No stack trace",
         );
-        setStatus("Authentication failed. Logging out...");
+        setStatus("Please select your role...");
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        authService.redirectToLogout();
+        router.push("/auth/select-role");
       }
     };
 

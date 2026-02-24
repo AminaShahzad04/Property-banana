@@ -32,27 +32,58 @@ export default function SelectRolePage() {
     setError(null);
 
     try {
+      console.log("🔄 [SELECT ROLE] Assigning role:", selectedRole);
       await userService.assignRole(selectedRole);
+      console.log("✅ [SELECT ROLE] Role assigned successfully");
 
-      // Redirect based on selected role
-      switch (selectedRole) {
+      // Verify role was assigned by calling getRoleStatus
+      console.log("🔍 [SELECT ROLE] Verifying role assignment...");
+      const roleStatus = await userService.getRoleStatus();
+      console.log("✅ [SELECT ROLE] Role status after assignment:", roleStatus);
+
+      if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
+        throw new Error("Role assignment verification failed");
+      }
+
+      // Get the assigned role
+      const assignedRole = roleStatus.roles[0];
+      console.log("✅ [SELECT ROLE] Verified role:", assignedRole);
+
+      // Redirect based on verified role
+      switch (assignedRole.role_id) {
         case 1: // LANDLORD
+          console.log("🏠 [SELECT ROLE] Redirecting to landlord dashboard");
           router.push("/Dash/landlord");
           break;
         case 2: // TENANT
+          console.log("🏠 [SELECT ROLE] Redirecting to tenant dashboard");
           router.push("/Dash/tenant");
           break;
         case 3: // AGENT
+          console.log("🏠 [SELECT ROLE] Redirecting to agent dashboard");
           router.push("/Dash/agent");
           break;
+        case 4: // MANAGER
+          console.log("🏠 [SELECT ROLE] Redirecting to manager dashboard");
+          router.push("/Dash/manager");
+          break;
         case 5: // OWNER
+          console.log("🏠 [SELECT ROLE] Redirecting to owner dashboard");
           router.push("/Dash/owner");
           break;
+        case 6: // ADMIN
+          console.log("🏠 [SELECT ROLE] Redirecting to admin dashboard");
+          router.push("/Dash/admin");
+          break;
         default:
+          console.warn(
+            "⚠️ [SELECT ROLE] Unknown role_id:",
+            assignedRole.role_id,
+          );
           router.push("/");
       }
     } catch (error) {
-      console.error("Role assignment failed:", error);
+      console.error("❌ [SELECT ROLE] Role assignment failed:", error);
       setError("Failed to assign role. Please try again.");
       setLoading(false);
     }
