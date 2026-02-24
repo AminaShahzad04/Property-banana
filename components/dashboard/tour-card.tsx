@@ -39,10 +39,13 @@ export function TourCard({
 
   const handleCancelTour = async () => {
     if (!confirm("Are you sure you want to cancel this tour?")) return;
-    
+
     try {
       setLoading(true);
-      await tenantService.cancelTour(parseInt(id), "User requested cancellation");
+      await tenantService.cancelTour(
+        parseInt(id),
+        "User requested cancellation",
+      );
       alert("Tour cancelled successfully");
       if (onTourUpdated) onTourUpdated();
     } catch (error) {
@@ -68,13 +71,19 @@ export function TourCard({
   return (
     <div className="bg-white p-4 rounded-none shadow-sm">
       <div className="flex gap-4">
-        <Image
-          src={image}
-          alt={title}
-          width={120}
-          height={80}
-          className="rounded-lg object-cover flex-shrink-0"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={title}
+            width={120}
+            height={80}
+            className="rounded-lg object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-[120px] h-[80px] rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+            No Image
+          </div>
+        )}
         <div className="flex-1 flex flex-col justify-between">
           <div>
             <div className="flex items-start justify-between mb-2">

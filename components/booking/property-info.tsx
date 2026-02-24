@@ -39,13 +39,19 @@ export function PropertyInfo({
             <span>{bathrooms} bath</span>
           </div>
         </div>
-        <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-          <Image
-            src={host.image || "/Avatar.png"}
-            alt={host.name}
-            fill
-            className="object-cover"
-          />
+        <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
+          {host.image ? (
+            <Image
+              src={host.image}
+              alt={host.name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+              ?
+            </div>
+          )}
         </div>
       </div>
 

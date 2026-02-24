@@ -45,13 +45,19 @@ export function AgentDetails() {
       </h1>
       <div className="w-full bg-card p-12 max-w-4xl flex flex-col items-center">
         <div className="flex flex-col items-start w-full">
-          <Image
-            src={profile?.photo_url || "/avatar.png"}
-            alt="Agent Profile"
-            width={100}
-            height={100}
-            className="rounded-full object-cover mb-6"
-          />
+          {profile?.photo_url ? (
+            <Image
+              src={profile.photo_url}
+              alt="Agent Profile"
+              width={100}
+              height={100}
+              className="rounded-full object-cover mb-6"
+            />
+          ) : (
+            <div className="w-[100px] h-[100px] rounded-full bg-gray-200 flex items-center justify-center text-gray-400 mb-6">
+              No Photo
+            </div>
+          )}
           <div className="flex flex-row justify-start gap-16 w-full mb-10">
             <div className="flex flex-col gap-6">
               <div>

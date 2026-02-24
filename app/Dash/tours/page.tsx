@@ -68,7 +68,7 @@ export default function ToursPage() {
             tour.property_title ||
             tour.property_location ||
             `Property #${tour.property_id}`,
-          image: tour.property_image || "/jumeirah.png",
+          image: tour.property_image || "",
           date: formattedDate,
           time: tour.time_slot,
           status: statusMap[tour.status],

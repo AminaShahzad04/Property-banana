@@ -65,7 +65,7 @@ export function UpcomingTours() {
               key={tour.tour_id}
               id={tour.tour_id.toString()}
               title={`Property #${tour.property_id}`}
-              image="/jumeirah.png"
+              image=""
               date={new Date(tour.tour_date).toLocaleDateString("en-US", {
                 weekday: "long",
                 day: "numeric",

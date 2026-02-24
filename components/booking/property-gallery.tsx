@@ -29,30 +29,42 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
       <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[400px] rounded-lg overflow-hidden relative">
         {/* Main large image - takes up left 2 columns and 2 rows */}
         <div
-          className="col-span-2 row-span-2 relative cursor-pointer group"
+          className="col-span-2 row-span-2 relative cursor-pointer group bg-gray-100"
           onClick={() => setFullScreenImage(0)}
         >
-          <Image
-            src={images[0] || "/placeholder.jpg"}
-            alt="Property main view"
-            fill
-            className="object-cover group-hover:brightness-90 transition-all"
-          />
+          {images[0] ? (
+            <Image
+              src={images[0]}
+              alt="Property main view"
+              fill
+              className="object-cover group-hover:brightness-90 transition-all"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
         </div>
 
         {/* Four smaller images on the right */}
         {images.slice(1, 5).map((image, index) => (
           <div
             key={index}
-            className="relative cursor-pointer group"
+            className="relative cursor-pointer group bg-gray-100"
             onClick={() => setFullScreenImage(index + 1)}
           >
-            <Image
-              src={image || "/placeholder.jpg"}
-              alt={`Property view ${index + 2}`}
-              fill
-              className="object-cover group-hover:brightness-90 transition-all"
-            />
+            {image ? (
+              <Image
+                src={image}
+                alt={`Property view ${index + 2}`}
+                fill
+                className="object-cover group-hover:brightness-90 transition-all"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">
+                No Image
+              </div>
+            )}
           </div>
         ))}
 

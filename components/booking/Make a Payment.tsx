@@ -689,13 +689,9 @@ export function RentPropertyModal({
 
                 <div className="bg-white border rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <Image
-                      src="/avatar.png"
-                      alt="User"
-                      width={48}
-                      height={48}
-                      className="rounded-full"
-                    />
+                    <div className="w-[48px] h-[48px] rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                      ?
+                    </div>
                     <div>
                       <h4 className="text-sm font-bold">Muhammad Bilal</h4>
                       <p className="text-xs text-gray-500">Letting Agent</p>

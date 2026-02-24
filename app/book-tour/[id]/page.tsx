@@ -57,7 +57,7 @@ export default function BookTourPage() {
               : "AED 0 Yearly",
           rating: typeof data.rating === "number" ? data.rating : 0,
           reviews: typeof data.reviews === "number" ? data.reviews : 0,
-          images: data.image ? [data.image] : ["/placeholder.jpg"],
+          images: data.image ? [data.image] : [],
           bedrooms: typeof data.bedrooms === "number" ? data.bedrooms : 0,
           beds: typeof data.bedrooms === "number" ? data.bedrooms : 0,
           bathrooms: typeof data.bathrooms === "number" ? data.bathrooms : 0,
@@ -136,10 +136,16 @@ export default function BookTourPage() {
             if (bidApproved) {
               setShowRentPropertyPage(true);
             } else {
-              router.push(`/place-bid/${extractNumericId(propertyData.id.toString())}?title=${encodeURIComponent(propertyData.name)}`);
+              router.push(
+                `/place-bid/${extractNumericId(propertyData.id.toString())}?title=${encodeURIComponent(propertyData.name)}`,
+              );
             }
           }}
-          onBookTour={() => router.push(`/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`)}
+          onBookTour={() =>
+            router.push(
+              `/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
+            )
+          }
           bidApproved={bidApproved}
         />
       )}
@@ -275,7 +281,11 @@ export default function BookTourPage() {
                 {/* Book Tour Button */}
                 <div className="mt-6">
                   <button
-                    onClick={() => router.push(`/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`)}
+                    onClick={() =>
+                      router.push(
+                        `/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
+                      )
+                    }
                     className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition-all"
                   >
                     Book a Tour

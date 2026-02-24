@@ -22,13 +22,19 @@ export function LockBoxTable() {
       header: "Property",
       render: (row: any) => (
         <div className="flex items-center gap-2">
-          <Image
-            src={row.property?.image || "/jumeirah.png"}
-            alt="property"
-            width={40}
-            height={40}
-            className="rounded"
-          />
+          {row.property?.image ? (
+            <Image
+              src={row.property.image}
+              alt="property"
+              width={40}
+              height={40}
+              className="rounded"
+            />
+          ) : (
+            <div className="w-[40px] h-[40px] rounded bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
+              N/A
+            </div>
+          )}
           <div>
             <div className="font-semibold text-sm">
               {row.property?.name || "N/A"}
