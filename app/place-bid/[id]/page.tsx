@@ -28,7 +28,7 @@ export default function PlaceBidPage() {
   const [selectedInstallments, setSelectedInstallments] = useState(2);
   const [bidsLeft, setBidsLeft] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [fetchingBids, setFetchingBids] = useState(true);
+    const [bidsLeft, setBidsLeft] = useState(3); // Initialize to 3 for the new logic
 
   const suggestedMin = 430000;
   const suggestedMax = 460000;
@@ -44,9 +44,7 @@ export default function PlaceBidPage() {
         const listingBids = bids.filter((bid) => bid.listing_id === listingId);
         // Calculate remaining bids (assuming max 3 bids per listing)
         const maxBidsPerListing = 3;
-        const remaining = Math.max(0, maxBidsPerListing - listingBids.length);
-        setBidsLeft(remaining);
-        console.log(
+          setBidsLeft(Math.max(0, 3 - listingBids.length)); // Update to reflect actual bids left
           `📊 Fetched ${listingBids.length} existing bids for listing ${listingId}, ${remaining} remaining`,
         );
       } catch (error) {
@@ -118,8 +116,8 @@ export default function PlaceBidPage() {
       );
     } catch (error) {
       console.error("Failed to place bid:", error);
-      alert("Failed to place bid. Please try again.");
-    } finally {
+          if (bidsLeft > 1) return "text-green-500";
+          if (bidsLeft === 1) return "text-yellow-500";
       setLoading(false);
     }
   };
@@ -179,7 +177,7 @@ export default function PlaceBidPage() {
                   />
                 </div>
               </div>
-
+                        {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} left
               {/* Title */}
               <div className="text-center mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900  py-4 mb-2">
@@ -189,7 +187,7 @@ export default function PlaceBidPage() {
                   You have {bidsLeft} bids. Choose wisely
                 </p>
               </div>
-
+                        {bidsLeft === 0 ? "You have no bids left for this property." : `You have ${bidsLeft} bid${bidsLeft === 1 ? "" : "s"} left for this property.`}
               {/* Slider */}
               <div className="mb-8">
                 <div className="flex justify-between mb-2">
