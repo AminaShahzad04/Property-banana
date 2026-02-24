@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { UpcomingTours } from "@/components/dashboard/upcoming-tours";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { userService } from "@/api/user.service";
 import { landlordService } from "@/api/landlord.service";
 
@@ -46,6 +47,11 @@ export default function LandlordDashboardPage() {
 
       <div className="mt-8 mb-8">
         <UpcomingTours />
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
+        <ActivityFeed />
       </div>
     </>
   );
