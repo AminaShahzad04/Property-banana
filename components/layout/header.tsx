@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 export function Header() {
   const { isAuthenticated, logout } = useAuthContext();
-  const [dashboardUrl, setDashboardUrl] = useState("/Dash/tenant");
+  const [dashboardUrl, setDashboardUrl] = useState("/");
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -35,12 +35,19 @@ export function Header() {
             case 5:
               setDashboardUrl("/Dash/owner");
               break;
+            case 6:
+              setDashboardUrl("/Dash/admin");
+              break;
             default:
-              setDashboardUrl("/Dash/tenant");
+              setDashboardUrl("/");
           }
+        } else {
+          // No role assigned - redirect to home
+          setDashboardUrl("/");
         }
       } catch (error) {
         console.error("Failed to fetch user role:", error);
+        setDashboardUrl("/");
       }
     };
 

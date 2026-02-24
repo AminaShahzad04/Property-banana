@@ -18,6 +18,7 @@ import {
 const tenantMenuItems = [
   { icon: Compass, label: "Dashboard", href: "/Dash/tenant" },
   { icon: Calendar, label: "My Viewings", href: "/Dash/tours" },
+  { icon: Calendar, label: "Calendar", href: "/Dash/tenant/calendar" },
 ];
 
 const tenantManageListings = [{ icon: House, label: "My Offers", href: "#" }];

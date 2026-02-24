@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { tenantService } from "@/api/tenant.service";
 import Image from "next/image";
 import { PropertyHeader } from "@/components/booking/property-header";
@@ -9,17 +9,17 @@ import { PropertyGallery } from "@/components/booking/property-gallery";
 import { PropertyInfo } from "@/components/booking/property-info";
 import { PropertyAmenities } from "@/components/booking/property-amenities";
 import { PropertyLocation } from "@/components/booking/property-location";
-import { BookTourModal } from "@/components/dashboard/book-tour-modal";
 import { PlaceBidModal } from "@/components/booking/place-bid-modal";
 import { RentPropertyModal } from "@/components/booking/Make a Payment";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 
 export default function BookTourPage() {
-  // ...existing code...
-  const [showBookTourModal, setShowBookTourModal] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPlaceBidModal, setShowPlaceBidModal] = useState(false);
   const [showRentPropertyPage, setShowRentPropertyPage] = useState(false);
+  const [showBidSuccessModal, setShowBidSuccessModal] = useState(false);
   const [bidApproved, setBidApproved] = useState(false); // Track if bid is approved
   const [bidAmount, setBidAmount] = useState(612000); // Bid amount state
   const [bidInput, setBidInput] = useState("612000"); // For input field
@@ -72,6 +72,15 @@ export default function BookTourPage() {
     fetchProperty();
   }, [params.id]);
 
+  useEffect(() => {
+    const bidSuccess = searchParams.get("bidSuccess");
+    if (bidSuccess === "true") {
+      setShowBidSuccessModal(true);
+      // Clean URL by removing query param
+      router.replace(`/book-tour/${params.id}`, { scroll: false });
+    }
+  }, [searchParams, params.id, router]);
+
   // If showing rent property page, render it instead
   if (showRentPropertyPage && propertyData) {
     return (
@@ -121,10 +130,10 @@ export default function BookTourPage() {
             if (bidApproved) {
               setShowRentPropertyPage(true);
             } else {
-              setShowPlaceBidModal(true);
+              router.push(`/place-bid/${propertyData.id}?title=${encodeURIComponent(propertyData.name)}`);
             }
           }}
-          onBookTour={() => setShowBookTourModal(true)}
+          onBookTour={() => router.push(`/book-tour/${propertyData.id}/booking?title=${encodeURIComponent(propertyData.name)}`)}
           bidApproved={bidApproved}
         />
       )}
@@ -255,6 +264,16 @@ export default function BookTourPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Book Tour Button */}
+                <div className="mt-6">
+                  <button
+                    onClick={() => router.push(`/book-tour/${propertyData.id}/booking?title=${encodeURIComponent(propertyData.name)}`)}
+                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition-all"
+                  >
+                    Book a Tour
+                  </button>
                 </div>
               </div>
 
@@ -410,16 +429,6 @@ export default function BookTourPage() {
       {/* Footer */}
       <Footer />
 
-      {/* Book Tour Modal */}
-      {!loading && propertyData && (
-        <BookTourModal
-          isOpen={showBookTourModal}
-          onOpenChange={setShowBookTourModal}
-          propertyTitle={propertyData.name}
-          propertyId={Number(propertyData.id)}
-        />
-      )}
-
       {/* Place Bid Modal */}
       {!loading && propertyData && (
         <PlaceBidModal
@@ -432,6 +441,47 @@ export default function BookTourPage() {
             setBidApproved(true);
           }}
         />
+      )}
+
+      {/* Bid Success Modal */}
+      {showBidSuccessModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowBidSuccessModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg p-8 max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="text-6xl">🎉</div>
+            </div>
+
+            {/* Success Message */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                Congratulations
+              </h2>
+              <p className="text-sm text-gray-600 mb-2">
+                You bid has been successfully placed.
+              </p>
+              <p className="text-sm text-red-500">
+                Please check your email for a transparent response by the
+                landlord within 24 hours.
+              </p>
+            </div>
+
+            {/* OK Button */}
+            <button
+              onClick={() => setShowBidSuccessModal(false)}
+              className="w-full py-3 text-black font-medium transition-colors"
+              style={{ backgroundColor: "#FBDE02" }}
+            >
+              Ok
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

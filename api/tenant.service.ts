@@ -90,8 +90,15 @@ export const tenantService = {
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to book tour");
+      let errorMessage = "Failed to book tour";
+      try {
+        const error = await response.json();
+        errorMessage = error.error?.message || errorMessage;
+      } catch (e) {
+        // Response is not JSON, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();

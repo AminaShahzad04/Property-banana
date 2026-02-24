@@ -26,48 +26,76 @@ export default function AuthCallbackPage() {
         const userFullName =
           response.user.full_name || response.user.email || "User";
         setUserName(userFullName);
-        setStatus(`Welcome , ${userFullName.split(" ")[0]}!`);
+        setStatus(`Welcome, ${userFullName.split(" ")[0]}!`);
 
         // Brief delay to show welcome message
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         setStatus("Checking user role...");
 
-        // Get user role from backend
+        // Get user role status from backend
         let roleStatus;
         try {
           roleStatus = await userService.getRoleStatus();
         } catch (error) {
-          // If getRoleStatus fails (403 or any error), assign tenant role
           console.error("Failed to get role status:", error);
-          setStatus("Assigning default role...");
-          try {
-            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
-            setStatus("Redirecting to dashboard...");
-            router.push("/Dash/tenant");
-            return;
-          } catch (assignError) {
-            console.error("Failed to assign role:", assignError);
-            setStatus("Redirecting to dashboard...");
-            router.push("/Dash/tenant");
-            return;
-          }
-        }
-
-        if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
-          // No role assigned - assign tenant role and redirect
-          setStatus("Assigning default role...");
-          try {
-            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
-          } catch (assignError) {
-            console.error("Failed to assign role:", assignError);
-          }
-          setStatus("Redirecting to dashboard...");
-          router.push("/Dash/tenant");
+          setStatus("Error checking role. Logging out...");
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          authService.redirectToLogout();
           return;
         }
 
-        // Redirect based on user's role (backend has already assigned it)
+        // If user has no role assigned, try to assign the saved role from signup
+        if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
+          const pendingRoleId = localStorage.getItem("pendingRoleId");
+          
+          if (pendingRoleId) {
+            setStatus("Assigning your selected role...");
+            try {
+              await userService.assignRole(parseInt(pendingRoleId));
+              localStorage.removeItem("pendingRoleId"); // Clear after successful assignment
+              
+              // Redirect based on the assigned role
+              const roleId = parseInt(pendingRoleId);
+              setStatus("Redirecting to dashboard...");
+              
+              switch (roleId) {
+                case 1: // LANDLORD
+                  router.push("/Dash/landlord");
+                  break;
+                case 2: // TENANT
+                  router.push("/Dash/tenant");
+                  break;
+                case 3: // AGENT
+                  router.push("/Dash/agent");
+                  break;
+                case 4: // MANAGER
+                  router.push("/Dash/manager");
+                  break;
+                case 5: // OWNER (Brokerage Owner)
+                  router.push("/Dash/owner");
+                  break;
+                case 6: // ADMIN
+                  router.push("/Dash/admin");
+                  break;
+                default:
+                  router.push("/Dash");
+              }
+              return;
+            } catch (assignError) {
+              console.error("Failed to assign role:", assignError);
+              localStorage.removeItem("pendingRoleId");
+            }
+          }
+          
+          // No pending role or assignment failed - logout and redirect
+          setStatus("No role assigned. Logging out...");
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          authService.redirectToLogout();
+          return;
+        }
+
+        // User has an assigned role - redirect based on it
         const primaryRole = roleStatus.roles[0];
         setStatus(`Redirecting to ${primaryRole.role_name} dashboard...`);
 
@@ -91,14 +119,14 @@ export default function AuthCallbackPage() {
             router.push("/Dash/admin");
             break;
           default:
-            // Default to tenant dashboard if role_id is unknown
-            router.push("/Dash/tenant");
+            // Unknown role_id - redirect to home
+            router.push("/");
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        setStatus("Redirecting to dashboard...");
-        // On error, redirect to tenant dashboard as default
-        router.push("/Dash/tenant");
+        setStatus("Authentication failed. Logging out...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        authService.redirectToLogout();
       }
     };
 
