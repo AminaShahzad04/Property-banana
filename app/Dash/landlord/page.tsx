@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { UpcomingTours } from "@/components/dashboard/upcoming-tours";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { userService } from "@/api/user.service";
 import { landlordService } from "@/api/landlord.service";
 
@@ -48,15 +46,6 @@ export default function LandlordDashboardPage() {
 
       <div className="mt-8 mb-8">
         <UpcomingTours />
-      </div>
-
-      <div className="grid grid-cols-3 gap-6 items-start">
-        <div className="col-span-2">
-          <RevenueChart />
-        </div>
-        <div>
-          <ActivityFeed />
-        </div>
       </div>
     </>
   );

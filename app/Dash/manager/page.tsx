@@ -1,8 +1,4 @@
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { AgentProductivityChart } from "@/components/dashboard/agent-productivity-chart";
-import { PropertiesByStatusChart } from "@/components/dashboard/properties-by-status-chart";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
 
 const managerStats = [
   {
@@ -39,26 +35,6 @@ export default function ManagerDashboardPage() {
       </div>
 
       <DashboardStats stats={managerStats} columns={3} />
-
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <div className="col-span-2">
-          <AgentProductivityChart />
-        </div>
-        <div className="col-span-2">
-          <PropertiesByStatusChart />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <h2 className="text-xl font-bold mb-4">Bid Received</h2>
-          <RevenueChart />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
-          <ActivityFeed />
-        </div>
-      </div>
     </>
   );
 }

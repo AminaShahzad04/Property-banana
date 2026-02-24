@@ -2,10 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { AgentProductivityChart } from "@/components/dashboard/agent-productivity-chart";
-import { PropertiesByStatusChart } from "@/components/dashboard/properties-by-status-chart";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
-import { BidsFunnel } from "@/components/dashboard/bids-funnel";
 import { userService } from "@/api/user.service";
 
 const ownerStats = [
@@ -87,24 +83,6 @@ export default function OwnerDashboard() {
       </div>
 
       <DashboardStats stats={ownerStats} columns={4} />
-
-      <div className="grid grid-cols-2 gap-6 mt-8 p-6">
-        <div>
-          <AgentProductivityChart />
-        </div>
-        <div>
-          <PropertiesByStatusChart />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-6  p-6">
-        <div className="col-span-2">
-          <RevenueChart />
-        </div>
-        <div className="col-span-1">
-          <BidsFunnel />
-        </div>
-      </div>
     </div>
   );
 }

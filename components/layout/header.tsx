@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { userService } from "@/api/user.service";
 import { useState, useEffect } from "react";
 
 export function Header() {
   const { isAuthenticated, logout } = useAuthContext();
-  const [dashboardUrl, setDashboardUrl] = useState("/");
+  const [dashboardUrl, setDashboardUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -70,38 +71,38 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="flex gap-8 items-center">
-            <a
+            <Link
               href="/"
               className="text-sm font-medium text-black hover:text-gray-900"
             >
               Home
-            </a>
-            <a
+            </Link>
+            <Link
               href="/listings"
               className="text-sm font-medium text-black hover:text-gray-900"
             >
               Listings
-            </a>
-            {isAuthenticated && (
-              <a
+            </Link>
+            {isAuthenticated && dashboardUrl && (
+              <Link
                 href={dashboardUrl}
                 className="text-sm font-medium text-black hover:text-gray-900"
               >
                 Dashboard
-              </a>
+              </Link>
             )}
-            <a
+            <Link
               href="/faqs"
               className="text-sm font-medium text-black hover:text-gray-900"
             >
               FAQs
-            </a>
-            <a
+            </Link>
+            <Link
               href="/contact"
               className="text-sm font-medium text-black hover:text-gray-900"
             >
               Contact
-            </a>
+            </Link>
           </nav>
         </div>
 
@@ -128,7 +129,7 @@ export function Header() {
             Logout
           </button>
         ) : (
-          <a
+          <Link
             href="/sign-in"
             className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mr-8"
           >
@@ -147,7 +148,7 @@ export function Header() {
               />
             </svg>
             Login
-          </a>
+          </Link>
         )}
       </div>
     </header>

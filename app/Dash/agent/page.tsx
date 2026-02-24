@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { QuickAction } from "@/components/dashboard/quick-action";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { agentService, type AgentPerformance } from "@/api/agent.service";
 import { userService } from "@/api/user.service";
 
@@ -80,17 +78,6 @@ export default function AgentDashboardPage() {
 
           <div className="mt-8 mb-8">
             <QuickAction />
-          </div>
-
-          <div className="grid grid-cols-3 gap-6 items-start">
-            <div className="col-span-2">
-              <h2 className="text-xl font-bold mb-4">Property Views</h2>
-              <RevenueChart />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
-              <ActivityFeed />
-            </div>
           </div>
         </>
       ) : (
