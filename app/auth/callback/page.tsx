@@ -48,17 +48,17 @@ export default function AuthCallbackPage() {
         // If user has no role assigned, try to assign the saved role from signup
         if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
           const pendingRoleId = localStorage.getItem("pendingRoleId");
-          
+
           if (pendingRoleId) {
             setStatus("Assigning your selected role...");
             try {
               await userService.assignRole(parseInt(pendingRoleId));
               localStorage.removeItem("pendingRoleId"); // Clear after successful assignment
-              
+
               // Redirect based on the assigned role
               const roleId = parseInt(pendingRoleId);
               setStatus("Redirecting to dashboard...");
-              
+
               switch (roleId) {
                 case 1: // LANDLORD
                   router.push("/Dash/landlord");
@@ -87,12 +87,21 @@ export default function AuthCallbackPage() {
               localStorage.removeItem("pendingRoleId");
             }
           }
-          
-          // No pending role or assignment failed - logout and redirect
-          setStatus("No role assigned. Logging out...");
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          authService.redirectToLogout();
-          return;
+
+          // No pending role or assignment failed - assign default tenant role
+          setStatus("Assigning default tenant role...");
+          try {
+            await userService.assignRole(2); // Assign TENANT role (role_id: 2)
+            setStatus("Redirecting to dashboard...");
+            router.push("/Dash/tenant");
+            return;
+          } catch (assignError) {
+            console.error("Failed to assign tenant role:", assignError);
+            setStatus("Error assigning role. Logging out...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            authService.redirectToLogout();
+            return;
+          }
         }
 
         // User has an assigned role - redirect based on it
