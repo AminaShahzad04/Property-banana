@@ -44,14 +44,15 @@ export default function PlaceBidPage() {
         const { bids } = await tenantService.getMyBids();
         // Filter bids for this listing
         const listingBids = bids.filter((bid) => bid.listing_id === listingId);
-        // Calculate remaining bids (assuming max 3 bids per listing)
+        // Use tenant_offer_count from backend, not array length
         const maxBidsPerListing = 3;
-        const usedBids = listingBids.length;
+        const usedBids =
+          listingBids.length > 0 ? listingBids[0].tenant_offer_count || 0 : 0;
         const remaining = Math.max(0, maxBidsPerListing - usedBids);
         setBidsUsed(usedBids);
         setBidsLeft(remaining);
         console.log(
-          `📊 Fetched ${usedBids} existing bids for listing ${listingId}, ${remaining} remaining`,
+          `📊 Fetched ${usedBids} offers for listing ${listingId}, ${remaining} remaining`,
         );
       } catch (error) {
         console.error("Failed to fetch bids:", error);

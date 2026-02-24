@@ -54,12 +54,14 @@ export default function BookTourPage() {
         const listingBids = Array.isArray(bids)
           ? bids.filter((bid: any) => bid.listing_id === id)
           : [];
-        const usedBids = listingBids.length;
+        // Use tenant_offer_count from backend, not array length
+        const usedBids =
+          listingBids.length > 0 ? listingBids[0].tenant_offer_count || 0 : 0;
         const remaining = Math.max(0, 3 - usedBids);
         setBidsUsed(usedBids);
         setBidsLeft(remaining);
         console.log(
-          `📊 Book-tour: Found ${usedBids} bids used for listing ${id}, ${remaining} remaining`,
+          `📊 Book-tour: Found ${usedBids} offers for listing ${id}, ${remaining} remaining`,
         );
       } catch (error) {
         console.error("Failed to fetch bids:", error);

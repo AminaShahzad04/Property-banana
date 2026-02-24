@@ -51,10 +51,13 @@ export function PlaceBidModal({
       const listingBids = Array.isArray(bids)
         ? bids.filter((bid) => bid.listing_id === listingId)
         : [];
-      const remaining = Math.max(0, 3 - listingBids.length);
+      // Use tenant_offer_count from backend, not array length
+      const usedBids =
+        listingBids.length > 0 ? listingBids[0].tenant_offer_count || 0 : 0;
+      const remaining = Math.max(0, 3 - usedBids);
       setBidsLeft(remaining);
       console.log(
-        `📊 Modal: Got ${listingBids.length} bids for listing ${listingId}, ${remaining} remaining`,
+        `📊 Modal: Got ${usedBids} offers for listing ${listingId}, ${remaining} remaining`,
       );
     } catch (error) {
       console.error("Failed to fetch bids:", error);

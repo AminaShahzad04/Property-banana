@@ -27,6 +27,7 @@ export interface Bid {
   frequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
   installments: 2 | 4 | 8 | 10 | 12;
   status: "OPEN" | "COUNTER_OFFER" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
+  tenant_offer_count?: number; // Number of offers made by tenant in this thread
   created_at: string;
 }
 
