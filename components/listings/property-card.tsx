@@ -4,6 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { BedSingle, Bath, Maximize2 } from "lucide-react";
 
+// Extract numeric ID from strings like 'prop_2' -> '2'
+const extractNumericId = (id: string): string => {
+  const match = id.match(/\d+$/);
+  return match ? match[0] : id;
+};
+
 interface PropertyCardProps {
   id: string;
   title: string;
@@ -31,7 +37,7 @@ export function PropertyCard({
 }: PropertyCardProps) {
   if (layout === "list") {
     return (
-      <Link href={`/book-tour/${id}`}>
+      <Link href={`/book-tour/${extractNumericId(id)}`}>
         <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer flex group">
           {/* Image Container - Left Side */}
           <div className="relative w-[360px] h-[220px] flex-shrink-0 overflow-hidden">
@@ -108,7 +114,7 @@ export function PropertyCard({
   }
 
   return (
-    <Link href={`/book-tour/${id}`}>
+    <Link href={`/book-tour/${extractNumericId(id)}`}>
       <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group">
         {/* Image Container */}
         <div className="relative h-52 overflow-hidden">

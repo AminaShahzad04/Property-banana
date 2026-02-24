@@ -11,6 +11,12 @@ import { tenantService } from "@/api/tenant.service";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
+// Extract numeric ID from strings like 'prop_2' -> '2'
+const extractNumericId = (id: string): string => {
+  const match = id.match(/\d+$/);
+  return match ? match[0] : id;
+};
+
 export default function PlaceBidPage() {
   const params = useParams();
   const router = useRouter();
@@ -77,7 +83,7 @@ export default function PlaceBidPage() {
       const newBidsCount = bidsLeft - 1;
       setBidsLeft(newBidsCount);
 
-      router.push(`/book-tour/${listingId}?bidSuccess=true`);
+      router.push(`/book-tour/${extractNumericId(listingId.toString())}?bidSuccess=true`);
     } catch (error) {
       console.error("Failed to place bid:", error);
       alert("Failed to place bid. Please try again.");

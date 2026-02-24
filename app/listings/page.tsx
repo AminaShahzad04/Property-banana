@@ -8,6 +8,12 @@ import { WhatsAppButton } from "@/components/general-dashboard/whatsapp-button";
 import { Pagination } from "@/components/ui/Pagination";
 import { tenantService, type Listing } from "@/api/tenant.service";
 
+// Extract numeric ID from strings like 'prop_2' -> '2'
+const extractNumericId = (id: string): string => {
+  const match = id.match(/\d+$/);
+  return match ? match[0] : id;
+};
+
 export default function ListingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -203,7 +209,7 @@ export default function ListingsPage() {
               >
                 {listings.map((listing) => (
                   <a
-                    href={`/book-tour/${listing.listing_id}`}
+                    href={`/book-tour/${extractNumericId(listing.listing_id.toString())}`}
                     style={{ textDecoration: "none" }}
                   >
                     <PropertyCard
