@@ -33,24 +33,20 @@ export default function SelectRolePage() {
 
     try {
       console.log("🔄 [SELECT ROLE] Assigning role:", selectedRole);
-      await userService.assignRole(selectedRole);
-      console.log("✅ [SELECT ROLE] Role assigned successfully");
+      const assignResult = await userService.assignRole(selectedRole);
+      console.log("✅ [SELECT ROLE] Role assigned successfully:", assignResult);
 
-      // Verify role was assigned by calling getRoleStatus
-      console.log("🔍 [SELECT ROLE] Verifying role assignment...");
-      const roleStatus = await userService.getRoleStatus();
-      console.log("✅ [SELECT ROLE] Role status after assignment:", roleStatus);
-
-      if (!roleStatus.role_assigned || roleStatus.roles.length === 0) {
-        throw new Error("Role assignment verification failed");
+      // Check if role assignment was successful
+      if (!assignResult.success) {
+        throw new Error(assignResult.message || "Role assignment failed");
       }
 
-      // Get the assigned role
-      const assignedRole = roleStatus.roles[0];
-      console.log("✅ [SELECT ROLE] Verified role:", assignedRole);
+      // Get the role_id from the response
+      const roleId = (assignResult as any).user_role?.role_id || selectedRole;
+      console.log("✅ [SELECT ROLE] Assigned role_id:", roleId);
 
-      // Redirect based on verified role
-      switch (assignedRole.role_id) {
+      // Redirect based on assigned role
+      switch (roleId) {
         case 1: // LANDLORD
           console.log("🏠 [SELECT ROLE] Redirecting to landlord dashboard");
           router.push("/Dash/landlord");
@@ -76,15 +72,16 @@ export default function SelectRolePage() {
           router.push("/Dash/admin");
           break;
         default:
-          console.warn(
-            "⚠️ [SELECT ROLE] Unknown role_id:",
-            assignedRole.role_id,
-          );
+          console.warn("⚠️ [SELECT ROLE] Unknown role_id:", roleId);
           router.push("/");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ [SELECT ROLE] Role assignment failed:", error);
-      setError("Failed to assign role. Please try again.");
+      console.error("❌ [SELECT ROLE] Error details:", {
+        message: error.message,
+        stack: error.stack,
+      });
+      setError(error.message || "Failed to assign role. Please try again.");
       setLoading(false);
     }
   };
