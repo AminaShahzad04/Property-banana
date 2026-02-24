@@ -208,17 +208,64 @@ export default function AuthCallbackPage() {
               );
               router.push("/");
           }
-        } else if (roleStatus.role_assigned) {
-          // Role assigned but roles array missing - backend response inconsistency
-          console.error(
-            "❌ [AUTH CALLBACK] Role assigned but roles array missing from backend response:",
-            roleStatus,
-          );
+        } else if (roleStatus.role_assigned || (roleStatus as any).has_roles) {
+          // Role assigned but roles array missing - get from user profile
           console.log(
-            "🔄 [AUTH CALLBACK] Redirecting to select-role to fix inconsistency",
+            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing. Fetching user profile...",
           );
-          setStatus("Setting up your account...");
-          router.push("/auth/select-role");
+          try {
+            const userProfile = await userService.getMyProfile();
+            console.log("✅ [AUTH CALLBACK] User profile:", userProfile);
+
+            if (
+              (userProfile as any).user_roles &&
+              (userProfile as any).user_roles.length > 0
+            ) {
+              const userRole = (userProfile as any).user_roles[0];
+              const roleId = userRole.role_id;
+              console.log(
+                "✅ [AUTH CALLBACK] Found role_id from profile:",
+                roleId,
+              );
+              setStatus("Redirecting to dashboard...");
+
+              switch (roleId) {
+                case 1:
+                  router.push("/Dash/landlord");
+                  break;
+                case 2:
+                  router.push("/Dash/tenant");
+                  break;
+                case 3:
+                  router.push("/Dash/agent");
+                  break;
+                case 4:
+                  router.push("/Dash/manager");
+                  break;
+                case 5:
+                  router.push("/Dash/owner");
+                  break;
+                case 6:
+                  router.push("/Dash/admin");
+                  break;
+                default:
+                  console.warn("⚠️ [AUTH CALLBACK] Unknown role_id:", roleId);
+                  router.push("/auth/select-role");
+              }
+            } else {
+              console.error(
+                "❌ [AUTH CALLBACK] No user_roles in profile:",
+                userProfile,
+              );
+              router.push("/auth/select-role");
+            }
+          } catch (profileError) {
+            console.error(
+              "❌ [AUTH CALLBACK] Failed to fetch user profile:",
+              profileError,
+            );
+            router.push("/auth/select-role");
+          }
         } else {
           // Role not assigned and no roles array - redirect to select role
           console.warn(

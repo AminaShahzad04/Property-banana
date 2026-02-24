@@ -59,30 +59,56 @@ export default function SelectRolePage() {
   useEffect(() => {
     const checkExistingRole = async () => {
       try {
-        console.log("🔍 [SELECT ROLE] Checking existing role on page load...");
+        console.log("🔍 [SELECT ROLE] Step 1: Get role status...");
         const roleStatus = await userService.getRoleStatus();
-        console.log("✅ [SELECT ROLE] Role status:", roleStatus);
+        console.log("✅ [SELECT ROLE] Role status response:", roleStatus);
 
-        if (
-          roleStatus.role_assigned &&
-          roleStatus.roles &&
-          roleStatus.roles.length > 0
-        ) {
-          const existingRole = roleStatus.roles[0];
-          console.log("✅ [SELECT ROLE] User already has role:", existingRole);
+        // Check if role is assigned (backend returns role_assigned or has_roles)
+        const isRoleAssigned =
+          roleStatus.role_assigned || (roleStatus as any).has_roles;
+
+        if (isRoleAssigned) {
           console.log(
-            "🔀 [SELECT ROLE] Redirecting to existing role dashboard...",
+            "✅ [SELECT ROLE] Role assigned = true, getting role details...",
           );
-          redirectToDashboard(existingRole.role_id, router);
-          return;
-        }
 
-        console.log(
-          "ℹ️ [SELECT ROLE] No role assigned, staying on select page",
-        );
+          // Try to get role_id from roles array first (if backend returns it)
+          if (roleStatus.roles && roleStatus.roles.length > 0) {
+            const roleId = roleStatus.roles[0].role_id;
+            console.log(
+              "✅ [SELECT ROLE] Got role_id from roles array:",
+              roleId,
+            );
+            redirectToDashboard(roleId, router);
+            return;
+          }
+
+          // If roles array not in response, get role_id from user profile
+          console.log("🔍 [SELECT ROLE] Getting role from user profile...");
+          const userProfile = await userService.getMyProfile();
+          console.log("✅ [SELECT ROLE] User profile:", userProfile);
+
+          if (
+            (userProfile as any).user_roles &&
+            (userProfile as any).user_roles.length > 0
+          ) {
+            const roleId = (userProfile as any).user_roles[0].role_id;
+            console.log("✅ [SELECT ROLE] Got role_id from profile:", roleId);
+            redirectToDashboard(roleId, router);
+            return;
+          }
+
+          // If still can't find role_id, show error
+          console.error("❌ [SELECT ROLE] Role assigned but no role_id found");
+          setError("Unable to determine your role. Please contact support.");
+        } else {
+          console.log(
+            "ℹ️ [SELECT ROLE] No role assigned yet, user can select role",
+          );
+        }
       } catch (error) {
         console.error("❌ [SELECT ROLE] Error checking role:", error);
-        // If error checking role, stay on page to allow selection
+        // Stay on page to allow role selection
       } finally {
         setCheckingRole(false);
       }
@@ -96,40 +122,31 @@ export default function SelectRolePage() {
     setError(null);
 
     try {
-      console.log("🔄 [SELECT ROLE] Assigning role:", selectedRole);
+      console.log("🔄 [SELECT ROLE] Step 1: Assigning role:", selectedRole);
       const assignResult = await userService.assignRole(selectedRole);
-      console.log("✅ [SELECT ROLE] Role assigned successfully:", assignResult);
+      console.log("✅ [SELECT ROLE] Assignment response:", assignResult);
 
-      // Check if role assignment was successful
       if (!assignResult.success) {
         throw new Error(assignResult.message || "Role assignment failed");
       }
 
-      // After successful assignment, call getRoleStatus to get the role info
-      console.log("🔍 [SELECT ROLE] Fetching role status after assignment...");
-      const roleStatus = await userService.getRoleStatus();
-      console.log("✅ [SELECT ROLE] Role status after assignment:", roleStatus);
+      console.log(
+        "🔍 [SELECT ROLE] Step 2: Getting role_id from assignment response...",
+      );
+      // Backend returns: { success, message, user_role: { role_id, ... }, user: {...} }
+      const roleId = (assignResult as any).user_role?.role_id;
 
-      if (
-        !roleStatus.role_assigned ||
-        !roleStatus.roles ||
-        roleStatus.roles.length === 0
-      ) {
-        throw new Error("Role status verification failed");
+      if (!roleId) {
+        console.error("❌ [SELECT ROLE] No role_id in response:", assignResult);
+        throw new Error("Unable to get role_id from assignment");
       }
 
-      // Get the assigned role from getRoleStatus response
-      const assignedRole = roleStatus.roles[0];
-      console.log("✅ [SELECT ROLE] Assigned role from status:", assignedRole);
+      console.log("✅ [SELECT ROLE] Got role_id:", roleId);
+      console.log("🔀 [SELECT ROLE] Step 3: Redirecting to dashboard...");
 
-      // Redirect to the appropriate dashboard
-      redirectToDashboard(assignedRole.role_id, router);
+      redirectToDashboard(roleId, router);
     } catch (error: any) {
-      console.error("❌ [SELECT ROLE] Role assignment failed:", error);
-      console.error("❌ [SELECT ROLE] Error details:", {
-        message: error.message,
-        stack: error.stack,
-      });
+      console.error("❌ [SELECT ROLE] Error:", error);
       setError(error.message || "Failed to assign role. Please try again.");
       setLoading(false);
     }
