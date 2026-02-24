@@ -30,15 +30,39 @@ export function PlaceBidModal({
   const [step, setStep] = useState(0); // 0: intro, 1: bid, 2: installments, 3: success
   const [bidAmount, setBidAmount] = useState("444,000");
   const [selectedInstallments, setSelectedInstallments] = useState(2);
-  const [bidsLeft, setBidsLeft] = useState(initialBids);
+  const [bidsLeft, setBidsLeft] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<{label: string; amount: number}[]>([]);
+  const [fetchingBids, setFetchingBids] = useState(true);
+  const [suggestions, setSuggestions] = useState<
+    { label: string; amount: number }[]
+  >([]);
 
   useEffect(() => {
     if (isOpen && listingId) {
       fetchBidSuggestions();
+      fetchBidsLeft();
     }
   }, [isOpen, listingId]);
+
+  const fetchBidsLeft = async () => {
+    try {
+      setFetchingBids(true);
+      const { bids } = await tenantService.getMyBids();
+      const listingBids = Array.isArray(bids)
+        ? bids.filter((bid) => bid.listing_id === listingId)
+        : [];
+      const remaining = Math.max(0, 3 - listingBids.length);
+      setBidsLeft(remaining);
+      console.log(
+        `📊 Modal: Got ${listingBids.length} bids for listing ${listingId}, ${remaining} remaining`,
+      );
+    } catch (error) {
+      console.error("Failed to fetch bids:", error);
+      setBidsLeft(0);
+    } finally {
+      setFetchingBids(false);
+    }
+  };
 
   const fetchBidSuggestions = async () => {
     try {
@@ -86,9 +110,15 @@ export function PlaceBidModal({
   const increaseNeeded = Math.max(0, suggestedMin + 8000 - bidValue);
 
   const getBidsLeftColor = () => {
-    if (bidsLeft === 3) return "text-green-500";
-    if (bidsLeft === 2) return "text-yellow-500";
+    if (bidsLeft >= 2) return "text-green-500";
+    if (bidsLeft === 1) return "text-yellow-500";
     return "text-red-500";
+  };
+
+  const getProgressBarColor = () => {
+    if (bidsLeft >= 2) return "bg-green-500";
+    if (bidsLeft === 1) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   if (!isOpen) return null;
@@ -124,8 +154,8 @@ export function PlaceBidModal({
         installments: selectedInstallments as 2 | 4 | 8 | 10 | 12,
       });
 
+      await fetchBidsLeft();
       const newBidsCount = bidsLeft - 1;
-      setBidsLeft(newBidsCount);
 
       if (onBidSubmitted) {
         onBidSubmitted(newBidsCount);
@@ -188,7 +218,8 @@ export function PlaceBidModal({
                 Place Your Winning Bid!
               </h2>
               <p className="text-sm text-gray-600">
-                You have {bidsLeft} bids. Choose wisely!
+                You have {bidsLeft} bid{bidsLeft === 1 ? "" : "s"} left for this
+                property.
               </p>
             </div>
 
@@ -218,7 +249,7 @@ export function PlaceBidModal({
                 </span>
               </div>
               <span className={`text-sm font-semibold ${getBidsLeftColor()}`}>
-                {bidsLeft}/3 Bids Left
+                {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
               </span>
             </div>
 
@@ -243,7 +274,7 @@ export function PlaceBidModal({
                       const value = e.target.value.replace(/[^0-9]/g, "");
                       const formatted = value.replace(
                         /\B(?=(\d{3})+(?!\d))/g,
-                        ","
+                        ",",
                       );
                       setBidAmount(formatted);
                     }}
@@ -269,8 +300,8 @@ export function PlaceBidModal({
                     strength.color === "red"
                       ? "text-red-500"
                       : strength.color === "orange"
-                      ? "text-orange-500"
-                      : "text-green-500"
+                        ? "text-orange-500"
+                        : "text-green-500"
                   }`}
                 >
                   {strength.text} Offer
@@ -340,7 +371,7 @@ export function PlaceBidModal({
                 </span>
               </div>
               <span className={`text-sm font-semibold ${getBidsLeftColor()}`}>
-                {bidsLeft}/3 Bids Left
+                {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
               </span>
             </div>
 

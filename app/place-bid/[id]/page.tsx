@@ -10,6 +10,7 @@ import Image from "next/image";
 import { tenantService } from "@/api/tenant.service";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Tooltip } from "@/components/ui/tooltip";
 
 // Extract numeric ID from strings like 'prop_2' -> '2'
 const extractNumericId = (id: string): string => {
@@ -27,6 +28,7 @@ export default function PlaceBidPage() {
   const [bidAmount, setBidAmount] = useState("444,000");
   const [selectedInstallments, setSelectedInstallments] = useState(2);
   const [bidsLeft, setBidsLeft] = useState(0);
+  const [bidsUsed, setBidsUsed] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fetchingBids, setFetchingBids] = useState(true);
 
@@ -44,15 +46,16 @@ export default function PlaceBidPage() {
         const listingBids = bids.filter((bid) => bid.listing_id === listingId);
         // Calculate remaining bids (assuming max 3 bids per listing)
         const maxBidsPerListing = 3;
-        const remaining = Math.max(0, maxBidsPerListing - listingBids.length);
+        const usedBids = listingBids.length;
+        const remaining = Math.max(0, maxBidsPerListing - usedBids);
+        setBidsUsed(usedBids);
         setBidsLeft(remaining);
         console.log(
-          `📊 Fetched ${listingBids.length} existing bids for listing ${listingId}, ${remaining} remaining`,
+          `📊 Fetched ${usedBids} existing bids for listing ${listingId}, ${remaining} remaining`,
         );
       } catch (error) {
         console.error("Failed to fetch bids:", error);
-        // Default to 3 if fetch fails
-        setBidsLeft(3);
+        setBidsLeft(0);
       } finally {
         setFetchingBids(false);
       }
@@ -90,9 +93,15 @@ export default function PlaceBidPage() {
   const increaseNeeded = Math.max(0, suggestedMin + 8000 - bidValue);
 
   const getBidsLeftColor = () => {
-    if (bidsLeft === 3) return "text-green-500";
-    if (bidsLeft === 2) return "text-yellow-500";
+    if (bidsLeft >= 2) return "text-green-500";
+    if (bidsLeft === 1) return "text-yellow-500";
     return "text-red-500";
+  };
+
+  const getProgressBarColor = () => {
+    if (bidsLeft >= 2) return "bg-green-500";
+    if (bidsLeft === 1) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   const handleSubmit = async () => {
@@ -110,6 +119,8 @@ export default function PlaceBidPage() {
         installments: selectedInstallments as 2 | 4 | 8 | 10 | 12,
       });
 
+      // Update bid counts
+      setBidsUsed(bidsUsed + 1);
       const newBidsCount = bidsLeft - 1;
       setBidsLeft(newBidsCount);
 
@@ -156,15 +167,28 @@ export default function PlaceBidPage() {
               <div className="mb-6">
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-green-500"
-                    style={{ width: `${(bidsLeft / 3) * 100}%` }}
+                    className={`h-full transition-all duration-300 ${
+                      bidsUsed === 3
+                        ? "bg-green-500"
+                        : bidsUsed === 2
+                          ? "bg-yellow-500"
+                          : bidsUsed === 1
+                            ? "bg-orange-500"
+                            : "bg-gray-300"
+                    }`}
+                    style={{ width: `${(bidsUsed / 3) * 100}%` }}
                   />
                 </div>
-                <span
-                  className={`text-sm  pt-4  flex justify-end ${getBidsLeftColor()}`}
-                >
-                  {bidsLeft}/3 Bids
-                </span>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-gray-500">
+                    {bidsUsed}/3 Bids Used
+                  </span>
+                  <span
+                    className={`text-sm font-semibold ${getBidsLeftColor()}`}
+                  >
+                    {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
+                  </span>
+                </div>
               </div>
 
               {/* Illustration */}
@@ -186,7 +210,8 @@ export default function PlaceBidPage() {
                   Place your winning bid!
                 </h2>
                 <p className="text-sm text-gray-600">
-                  You have {bidsLeft} bids. Choose wisely
+                  You have {bidsLeft} bid{bidsLeft === 1 ? "" : "s"} left for
+                  this property.
                 </p>
               </div>
 
@@ -350,14 +375,23 @@ export default function PlaceBidPage() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={bidsLeft === 0 || loading}
-                  className="w-40 py-3 text-black font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "#FBDE02" }}
+                <Tooltip
+                  content="You have already placed 3 bids for this property"
+                  disabled={bidsLeft > 0}
                 >
-                  {loading ? "Submitting..." : "Submit bid"}
-                </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={bidsLeft === 0 || loading}
+                    className="w-40 py-3 text-black font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: "#FBDE02" }}
+                  >
+                    {loading
+                      ? "Submitting..."
+                      : bidsLeft === 0
+                        ? "No Bids Left"
+                        : "Submit bid"}
+                  </button>
+                </Tooltip>
               </div>
             </div>
           </div>

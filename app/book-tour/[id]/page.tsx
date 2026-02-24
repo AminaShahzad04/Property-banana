@@ -13,6 +13,7 @@ import { PlaceBidModal } from "@/components/booking/place-bid-modal";
 import { RentPropertyModal } from "@/components/booking/Make a Payment";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { Tooltip } from "@/components/ui/tooltip";
 
 // Extract numeric ID from strings like 'prop_2' -> '2'
 const extractNumericId = (id: string): string => {
@@ -33,11 +34,43 @@ export default function BookTourPage() {
   const [bidLoading, setBidLoading] = useState(false);
   const [bidError, setBidError] = useState("");
   const [showMore, setShowMore] = useState(false); // Track description expand/collapse
+  const [bidsLeft, setBidsLeft] = useState(3);
+  const [bidsUsed, setBidsUsed] = useState(0);
+  const [fetchingBids, setFetchingBids] = useState(true);
   const minBid = 100000;
   const maxBid = 700000;
   const params = useParams();
   const [propertyData, setPropertyData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch bids for this listing
+  useEffect(() => {
+    const fetchBidsForListing = async () => {
+      try {
+        setFetchingBids(true);
+        const id = params.id ? Number(params.id) : null;
+        if (!id) return;
+        const { bids } = await tenantService.getMyBids();
+        const listingBids = Array.isArray(bids)
+          ? bids.filter((bid: any) => bid.listing_id === id)
+          : [];
+        const usedBids = listingBids.length;
+        const remaining = Math.max(0, 3 - usedBids);
+        setBidsUsed(usedBids);
+        setBidsLeft(remaining);
+        console.log(
+          `📊 Book-tour: Found ${usedBids} bids used for listing ${id}, ${remaining} remaining`,
+        );
+      } catch (error) {
+        console.error("Failed to fetch bids:", error);
+        setBidsUsed(0);
+        setBidsLeft(3);
+      } finally {
+        setFetchingBids(false);
+      }
+    };
+    fetchBidsForListing();
+  }, [params.id]);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -313,9 +346,42 @@ export default function BookTourPage() {
 
               {/* Place a Bid Card - Styled to match rough page */}
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-2xl font-bold text-center mb-6">
+                <h3 className="text-2xl font-bold text-center mb-4">
                   Place a bid
                 </h3>
+                {/* Progress bar showing bids used */}
+                <div className="mb-4">
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        bidsUsed === 3
+                          ? "bg-green-500"
+                          : bidsUsed === 2
+                            ? "bg-yellow-500"
+                            : bidsUsed === 1
+                              ? "bg-orange-500"
+                              : "bg-gray-300"
+                      }`}
+                      style={{ width: `${(bidsUsed / 3) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500">
+                      {bidsUsed}/3 Bids Used
+                    </span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        bidsLeft === 0
+                          ? "text-red-500"
+                          : bidsLeft === 1
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                      }`}
+                    >
+                      {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
+                    </span>
+                  </div>
+                </div>
                 <div className="flex items-center gap-4 px-2">
                   {/* Left - Hand with Money */}
                   <div className="flex-shrink-0">
@@ -422,31 +488,43 @@ export default function BookTourPage() {
                   </div>
                 </div>
                 {/* Submit button */}
-                <button
-                  className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-all disabled:opacity-60"
-                  disabled={bidLoading}
-                  onClick={async () => {
-                    const propertyId = propertyData?.id || params.id;
-                    if (!propertyId) return;
-                    setBidLoading(true);
-                    setBidError("");
-                    try {
-                      await tenantService.placeBid({
-                        listing_id: Number(propertyId),
-                        amount: bidAmount,
-                        frequency: "YEARLY",
-                        installments: installments as 2 | 4 | 8 | 10 | 12,
-                      });
-                      setBidApproved(true);
-                    } catch (e: any) {
-                      setBidError(e.message || "Failed to place bid");
-                    } finally {
-                      setBidLoading(false);
-                    }
-                  }}
+                <Tooltip
+                  content="You have already placed 3 bids for this property"
+                  disabled={bidsLeft > 0}
                 >
-                  {bidLoading ? "Submitting..." : "Submit bid"}
-                </button>
+                  <button
+                    className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={bidLoading || bidsLeft === 0}
+                    onClick={async () => {
+                      const propertyId = propertyData?.id || params.id;
+                      if (!propertyId) return;
+                      setBidLoading(true);
+                      setBidError("");
+                      try {
+                        await tenantService.placeBid({
+                          listing_id: Number(propertyId),
+                          amount: bidAmount,
+                          frequency: "YEARLY",
+                          installments: installments as 2 | 4 | 8 | 10 | 12,
+                        });
+                        // Update bid count
+                        setBidsUsed(bidsUsed + 1);
+                        setBidsLeft(Math.max(0, bidsLeft - 1));
+                        setBidApproved(true);
+                      } catch (e: any) {
+                        setBidError(e.message || "Failed to place bid");
+                      } finally {
+                        setBidLoading(false);
+                      }
+                    }}
+                  >
+                    {bidLoading
+                      ? "Submitting..."
+                      : bidsLeft === 0
+                        ? "No Bids Left"
+                        : "Submit bid"}
+                  </button>
+                </Tooltip>
                 {bidError && (
                   <div className="text-red-600 text-center mt-2">
                     {bidError}

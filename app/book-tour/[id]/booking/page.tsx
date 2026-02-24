@@ -20,6 +20,7 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [bookedTour, setBookedTour] = useState<any>(null);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -75,11 +76,15 @@ export default function BookingPage() {
         const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`;
         const timeSlot = timeSlots[selectedTime].time;
 
-        await tenantService.bookTour({
+        const response = await tenantService.bookTour({
           propertyId,
           date: dateStr,
           timeSlot,
         });
+
+        // Store the booked tour details from backend
+        setBookedTour(response.tour);
+        console.log("🎫 Booked tour details:", response.tour);
 
         setStep(3);
       } catch (error) {
@@ -391,13 +396,13 @@ export default function BookingPage() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 3 && bookedTour && (
             <div className="text-center py-4 bg-card shadow-lg rounded-xl">
               <h2 className="text-3xl font-bold text-gray-900 p-8">
                 Booking confirmed
               </h2>
 
-              {/* Date and Time Info */}
+              {/* Date and Time Info from Backend */}
               <div className="max-w-lg mx-auto bg-white">
                 <div className="space-y-6 flex justify-between">
                   {/* Date */}
@@ -412,7 +417,15 @@ export default function BookingPage() {
                         Date
                       </div>
                       <div className="text-sm text-gray-600">
-                        {getSelectedDateString()}
+                        {new Date(bookedTour.tour_date).toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "long",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
                       </div>
                     </div>
                   </div>
@@ -429,11 +442,39 @@ export default function BookingPage() {
                         Time
                       </div>
                       <div className="text-sm text-gray-600">
-                        {getSelectedTimeString()}
+                        {bookedTour.time_slot}
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Tour ID and Status */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div>
+                      Tour ID:{" "}
+                      <span className="font-semibold">
+                        #{bookedTour.tour_id}
+                      </span>
+                    </div>
+                    <div>
+                      Status:{" "}
+                      <span className="font-semibold text-green-600">
+                        {bookedTour.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => router.push("/Dash/tenant/tours")}
+                  className="px-8 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors"
+                >
+                  View My Tours
+                </button>
               </div>
             </div>
           )}
