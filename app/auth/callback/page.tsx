@@ -70,10 +70,10 @@ export default function AuthCallbackPage() {
         }
 
         // If user has no role assigned, redirect to role selection
-        if (!roleStatus.role_assigned) {
+        if (!roleStatus.user?.role_assigned) {
           console.log(
             "⚠️ [AUTH CALLBACK] No role assigned. role_assigned:",
-            roleStatus.role_assigned,
+            roleStatus.user?.role_assigned,
           );
           const pendingRoleId = localStorage.getItem("pendingRoleId");
           console.log(
@@ -208,10 +208,10 @@ export default function AuthCallbackPage() {
               );
               router.push("/");
           }
-        } else if (roleStatus.role_assigned || (roleStatus as any).has_roles) {
-          // Role assigned but roles array missing - get from user profile
+        } else if (roleStatus.user?.role_assigned) {
+          // Role assigned but roles array missing - should not happen with correct backend
           console.log(
-            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing. Fetching user profile...",
+            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing or empty",
           );
           try {
             const userProfile = await userService.getMyProfile();

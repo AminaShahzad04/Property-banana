@@ -63,16 +63,15 @@ export default function SelectRolePage() {
         const roleStatus = await userService.getRoleStatus();
         console.log("✅ [SELECT ROLE] Role status response:", roleStatus);
 
-        // Check if role is assigned (backend returns role_assigned or has_roles)
-        const isRoleAssigned =
-          roleStatus.role_assigned || (roleStatus as any).has_roles;
+        // Check if role is assigned (backend returns user.role_assigned)
+        const isRoleAssigned = roleStatus.user?.role_assigned;
 
         if (isRoleAssigned) {
           console.log(
             "✅ [SELECT ROLE] Role assigned = true, getting role details...",
           );
 
-          // Try to get role_id from roles array first (if backend returns it)
+          // Get role_id from roles array (backend returns it at root level)
           if (roleStatus.roles && roleStatus.roles.length > 0) {
             const roleId = roleStatus.roles[0].role_id;
             console.log(

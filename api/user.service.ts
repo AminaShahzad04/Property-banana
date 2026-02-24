@@ -55,8 +55,16 @@ export const userService = {
    * Check if user has been assigned a role
    */
   async getRoleStatus(): Promise<{
-    role_assigned: boolean;
+    user: {
+      user_id: number;
+      role_assigned: boolean;
+      [key: string]: any;
+    };
     roles: Array<{ role_id: number; role_name: string }>;
+    auth_methods: {
+      cognito: boolean;
+      uaepass: boolean;
+    };
   }> {
     const response = await fetch(`${API_BASE_URL}/api/users/me/role-status`, {
       credentials: "include",
