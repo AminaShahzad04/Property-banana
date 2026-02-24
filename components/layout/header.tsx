@@ -16,31 +16,48 @@ export function Header() {
 
       try {
         const roleStatus = await userService.getRoleStatus();
-        if (roleStatus.user?.role_assigned && roleStatus.roles.length > 0) {
-          const primaryRole = roleStatus.roles[0];
+        // Check role_assigned at both root level and nested user.role_assigned
+        const isRoleAssigned =
+          (roleStatus as any).role_assigned ||
+          (roleStatus as any).user?.role_assigned;
 
-          // Map role_id to dashboard URL
-          switch (primaryRole.role_id) {
-            case 1:
-              setDashboardUrl("/Dash/landlord");
-              break;
-            case 2:
-              setDashboardUrl("/Dash/tenant");
-              break;
-            case 3:
-              setDashboardUrl("/Dash/agent");
-              break;
-            case 4:
-              setDashboardUrl("/Dash/manager");
-              break;
-            case 5:
-              setDashboardUrl("/Dash/owner");
-              break;
-            case 6:
-              setDashboardUrl("/Dash/admin");
-              break;
-            default:
-              setDashboardUrl("/");
+        if (isRoleAssigned) {
+          // Fetch user profile to get role_id
+          const userProfile = await userService.getMyProfile();
+
+          if (
+            (userProfile as any).user_roles &&
+            (userProfile as any).user_roles.length > 0
+          ) {
+            const primaryRole = (userProfile as any).user_roles[0];
+            const roleId = primaryRole.role_id;
+
+            // Map role_id to dashboard URL
+            switch (roleId) {
+              case 1:
+                setDashboardUrl("/Dash/landlord");
+                break;
+              case 2:
+                setDashboardUrl("/Dash/tenant");
+                break;
+              case 3:
+                setDashboardUrl("/Dash/agent");
+                break;
+              case 4:
+                setDashboardUrl("/Dash/manager");
+                break;
+              case 5:
+                setDashboardUrl("/Dash/owner");
+                break;
+              case 6:
+                setDashboardUrl("/Dash/admin");
+                break;
+              default:
+                setDashboardUrl("/");
+            }
+          } else {
+            // No user_roles in profile
+            setDashboardUrl("/");
           }
         } else {
           // No role assigned - redirect to home

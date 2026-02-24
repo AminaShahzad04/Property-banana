@@ -70,10 +70,15 @@ export default function AuthCallbackPage() {
         }
 
         // If user has no role assigned, redirect to role selection
-        if (!roleStatus.user?.role_assigned) {
+        // Check role_assigned at root level (actual API response structure)
+        const roleStatusAny = roleStatus as any;
+        const isRoleAssigned =
+          roleStatusAny.role_assigned || roleStatusAny.user?.role_assigned;
+
+        if (!isRoleAssigned) {
           console.log(
             "⚠️ [AUTH CALLBACK] No role assigned. role_assigned:",
-            roleStatus.user?.role_assigned,
+            isRoleAssigned,
           );
           const pendingRoleId = localStorage.getItem("pendingRoleId");
           console.log(
@@ -162,114 +167,79 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        // User has an assigned role - redirect based on it
-        if (roleStatus.roles && roleStatus.roles.length > 0) {
-          const primaryRole = roleStatus.roles[0];
-          console.log(
-            "✅ [AUTH CALLBACK] User has assigned role:",
-            primaryRole,
-          );
-          setStatus(`Redirecting to ${primaryRole.role_name} dashboard...`);
+        // User has an assigned role - fetch profile to get role_id and redirect
+        console.log(
+          "✅ [AUTH CALLBACK] User has assigned role, fetching profile to get role details...",
+        );
+        setStatus("Loading your dashboard...");
 
-          switch (primaryRole.role_id) {
-            case 1: // LANDLORD
-              console.log(
-                "🏠 [AUTH CALLBACK] Redirecting to landlord dashboard",
-              );
-              router.push("/Dash/landlord");
-              break;
-            case 2: // TENANT
-              console.log("🏠 [AUTH CALLBACK] Redirecting to tenant dashboard");
-              router.push("/Dash/tenant");
-              break;
-            case 3: // AGENT
-              console.log("🏠 [AUTH CALLBACK] Redirecting to agent dashboard");
-              router.push("/Dash/agent");
-              break;
-            case 4: // MANAGER
-              console.log(
-                "🏠 [AUTH CALLBACK] Redirecting to manager dashboard",
-              );
-              router.push("/Dash/manager");
-              break;
-            case 5: // OWNER (Brokerage Owner)
-              console.log("🏠 [AUTH CALLBACK] Redirecting to owner dashboard");
-              router.push("/Dash/owner");
-              break;
-            case 6: // ADMIN
-              console.log("🏠 [AUTH CALLBACK] Redirecting to admin dashboard");
-              router.push("/Dash/admin");
-              break;
-            default:
-              // Unknown role_id - redirect to home
-              console.warn(
-                "⚠️ [AUTH CALLBACK] Unknown role_id:",
-                primaryRole.role_id,
-              );
-              router.push("/");
-          }
-        } else if (roleStatus.user?.role_assigned) {
-          // Role assigned but roles array missing - should not happen with correct backend
-          console.log(
-            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing or empty",
-          );
-          try {
-            const userProfile = await userService.getMyProfile();
-            console.log("✅ [AUTH CALLBACK] User profile:", userProfile);
+        try {
+          const userProfile = await userService.getMyProfile();
+          console.log("✅ [AUTH CALLBACK] User profile:", userProfile);
 
-            if (
-              (userProfile as any).user_roles &&
-              (userProfile as any).user_roles.length > 0
-            ) {
-              const userRole = (userProfile as any).user_roles[0];
-              const roleId = userRole.role_id;
-              console.log(
-                "✅ [AUTH CALLBACK] Found role_id from profile:",
-                roleId,
-              );
-              setStatus("Redirecting to dashboard...");
+          if (
+            (userProfile as any).user_roles &&
+            (userProfile as any).user_roles.length > 0
+          ) {
+            const primaryRole = (userProfile as any).user_roles[0];
+            const roleId = primaryRole.role_id;
+            const roleName = primaryRole.role?.role_name || "user";
+            console.log("✅ [AUTH CALLBACK] Found role:", { roleId, roleName });
+            setStatus(`Redirecting to ${roleName} dashboard...`);
 
-              switch (roleId) {
-                case 1:
-                  router.push("/Dash/landlord");
-                  break;
-                case 2:
-                  router.push("/Dash/tenant");
-                  break;
-                case 3:
-                  router.push("/Dash/agent");
-                  break;
-                case 4:
-                  router.push("/Dash/manager");
-                  break;
-                case 5:
-                  router.push("/Dash/owner");
-                  break;
-                case 6:
-                  router.push("/Dash/admin");
-                  break;
-                default:
-                  console.warn("⚠️ [AUTH CALLBACK] Unknown role_id:", roleId);
-                  router.push("/auth/select-role");
-              }
-            } else {
-              console.error(
-                "❌ [AUTH CALLBACK] No user_roles in profile:",
-                userProfile,
-              );
-              router.push("/auth/select-role");
+            switch (roleId) {
+              case 1: // LANDLORD
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to landlord dashboard",
+                );
+                router.push("/Dash/landlord");
+                break;
+              case 2: // TENANT
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to tenant dashboard",
+                );
+                router.push("/Dash/tenant");
+                break;
+              case 3: // AGENT
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to agent dashboard",
+                );
+                router.push("/Dash/agent");
+                break;
+              case 4: // MANAGER
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to manager dashboard",
+                );
+                router.push("/Dash/manager");
+                break;
+              case 5: // OWNER (Brokerage Owner)
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to owner dashboard",
+                );
+                router.push("/Dash/owner");
+                break;
+              case 6: // ADMIN
+                console.log(
+                  "🏠 [AUTH CALLBACK] Redirecting to admin dashboard",
+                );
+                router.push("/Dash/admin");
+                break;
+              default:
+                // Unknown role_id - redirect to home
+                console.warn("⚠️ [AUTH CALLBACK] Unknown role_id:", roleId);
+                router.push("/");
             }
-          } catch (profileError) {
+          } else {
             console.error(
-              "❌ [AUTH CALLBACK] Failed to fetch user profile:",
-              profileError,
+              "❌ [AUTH CALLBACK] No user_roles in profile:",
+              userProfile,
             );
             router.push("/auth/select-role");
           }
-        } else {
-          // Role not assigned and no roles array - redirect to select role
-          console.warn(
-            "⚠️ [AUTH CALLBACK] No role assigned. Redirecting to select role.",
+        } catch (profileError) {
+          console.error(
+            "❌ [AUTH CALLBACK] Failed to fetch user profile:",
+            profileError,
           );
           router.push("/auth/select-role");
         }

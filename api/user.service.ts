@@ -53,19 +53,30 @@ export const userService = {
 
   /**
    * Check if user has been assigned a role
+   * Returns different structures based on backend implementation
    */
-  async getRoleStatus(): Promise<{
-    user: {
-      user_id: number;
-      role_assigned: boolean;
-      [key: string]: any;
-    };
-    roles: Array<{ role_id: number; role_name: string }>;
-    auth_methods: {
-      cognito: boolean;
-      uaepass: boolean;
-    };
-  }> {
+  async getRoleStatus(): Promise<
+    | {
+        // Structure 1: Nested user object with roles array
+        user: {
+          user_id: number;
+          role_assigned: boolean;
+          [key: string]: any;
+        };
+        roles: Array<{ role_id: number; role_name: string }>;
+        auth_methods: {
+          cognito: boolean;
+          uaepass: boolean;
+        };
+      }
+    | {
+        // Structure 2: Flat structure (actual API response)
+        user_id: number;
+        role_assigned: boolean;
+        has_roles: boolean;
+        message: string;
+      }
+  > {
     const response = await fetch(`${API_BASE_URL}/api/users/me/role-status`, {
       credentials: "include",
     });
