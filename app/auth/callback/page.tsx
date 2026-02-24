@@ -210,13 +210,15 @@ export default function AuthCallbackPage() {
           }
         } else if (roleStatus.role_assigned) {
           // Role assigned but roles array missing - backend response inconsistency
-          // Default to tenant dashboard since we can't determine specific role
-          console.warn(
-            "⚠️ [AUTH CALLBACK] Role assigned but roles array missing from backend response.",
+          console.error(
+            "❌ [AUTH CALLBACK] Role assigned but roles array missing from backend response:",
+            roleStatus,
           );
-          console.log("🏠 [AUTH CALLBACK] Defaulting to tenant dashboard");
-          setStatus("Redirecting to dashboard...");
-          router.push("/Dash/tenant");
+          console.log(
+            "🔄 [AUTH CALLBACK] Redirecting to select-role to fix inconsistency",
+          );
+          setStatus("Setting up your account...");
+          router.push("/auth/select-role");
         } else {
           // Role not assigned and no roles array - redirect to select role
           console.warn(

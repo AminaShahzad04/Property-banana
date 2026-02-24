@@ -35,6 +35,10 @@ export default function SelectRolePage() {
       console.log("🔄 [SELECT ROLE] Assigning role:", selectedRole);
       const assignResult = await userService.assignRole(selectedRole);
       console.log("✅ [SELECT ROLE] Role assigned successfully:", assignResult);
+      console.log(
+        "🔍 [SELECT ROLE] Full response:",
+        JSON.stringify(assignResult, null, 2),
+      );
 
       // Check if role assignment was successful
       if (!assignResult.success) {
@@ -42,8 +46,16 @@ export default function SelectRolePage() {
       }
 
       // Get the role_id from the response
-      const roleId = (assignResult as any).user_role?.role_id || selectedRole;
-      console.log("✅ [SELECT ROLE] Assigned role_id:", roleId);
+      const responseData = assignResult as any;
+      console.log("🔍 [SELECT ROLE] user_role object:", responseData.user_role);
+      console.log(
+        "🔍 [SELECT ROLE] role_id from response:",
+        responseData.user_role?.role_id,
+      );
+
+      const roleId = responseData.user_role?.role_id || selectedRole;
+      console.log("✅ [SELECT ROLE] Final role_id to use:", roleId);
+      console.log("✅ [SELECT ROLE] Selected role was:", selectedRole);
 
       // Redirect based on assigned role
       switch (roleId) {
