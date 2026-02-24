@@ -16,7 +16,7 @@ export function Header() {
 
       try {
         const roleStatus = await userService.getRoleStatus();
-        if (roleStatus.role_assigned && roleStatus.roles.length > 0) {
+        if (roleStatus.user?.role_assigned && roleStatus.roles.length > 0) {
           const primaryRole = roleStatus.roles[0];
 
           // Map role_id to dashboard URL
