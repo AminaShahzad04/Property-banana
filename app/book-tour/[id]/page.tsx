@@ -46,28 +46,43 @@ export default function BookTourPage() {
         const id = params.id ? Number(params.id) : null;
         if (!id) return;
         const data = await tenantService.getListingDetails(id);
-        // Defensive mapping for all fields
+
+        // Map backend response to propertyData
+        // Backend returns: id, name, location, images[], bedrooms, beds, bathrooms, description, amenities[], price_annual, property_size
+        console.log("🏠 Backend listing data:", data);
         setPropertyData({
-          id: data.listing_id,
-          name: data.description || data.property_type || "Property",
+          id: (data as any).id || data.listing_id || id,
+          name:
+            (data as any).name ||
+            data.description ||
+            data.property_type ||
+            "Property",
           location: data.location || "Unknown",
           price:
-            typeof data.price === "number"
-              ? `AED ${data.price.toLocaleString()} Yearly`
-              : "AED 0 Yearly",
-          rating: typeof data.rating === "number" ? data.rating : 0,
-          reviews: typeof data.reviews === "number" ? data.reviews : 0,
-          images: data.image ? [data.image] : [],
-          bedrooms: typeof data.bedrooms === "number" ? data.bedrooms : 0,
-          beds: typeof data.bedrooms === "number" ? data.bedrooms : 0,
-          bathrooms: typeof data.bathrooms === "number" ? data.bathrooms : 0,
+            typeof (data as any).price_annual === "string"
+              ? `AED ${parseFloat((data as any).price_annual).toLocaleString()} Yearly`
+              : typeof data.price === "number"
+                ? `AED ${data.price.toLocaleString()} Yearly`
+                : "AED 0 Yearly",
+          rating: (data as any).rating || data.rating || 0,
+          reviews: (data as any).reviews || data.reviews || 0,
+          images: (data as any).images || (data.image ? [data.image] : []),
+          bedrooms: (data as any).bedrooms || data.bedrooms || 0,
+          beds: (data as any).beds || data.bedrooms || 0,
+          bathrooms: (data as any).bathrooms || data.bathrooms || 0,
           sqft:
-            typeof data.area_sqft === "number"
-              ? `${data.area_sqft} sqft`
-              : "0 sqft",
-          propertyType: data.property_type || "",
-          description: data.description || "No description available.",
-          amenities: [], // fallback, since not in Listing
+            typeof (data as any).property_size === "string"
+              ? `${parseFloat((data as any).property_size)} sqft`
+              : typeof data.area_sqft === "number"
+                ? `${data.area_sqft} sqft`
+                : "0 sqft",
+          propertyType: (data as any).name || data.property_type || "",
+          description:
+            (data as any).description ||
+            data.description ||
+            "No description available.",
+          amenities: (data as any).amenities || [],
+          host: (data as any).host || { name: "Unknown", image: "" },
         });
       } catch (e) {
         setPropertyData(null);
@@ -136,16 +151,18 @@ export default function BookTourPage() {
             if (bidApproved) {
               setShowRentPropertyPage(true);
             } else {
+              const propertyId = propertyData.id || params.id || "";
               router.push(
-                `/place-bid/${extractNumericId(propertyData.id.toString())}?title=${encodeURIComponent(propertyData.name)}`,
+                `/place-bid/${extractNumericId(propertyId.toString())}?title=${encodeURIComponent(propertyData.name)}`,
               );
             }
           }}
-          onBookTour={() =>
+          onBookTour={() => {
+            const propertyId = propertyData.id || params.id || "";
             router.push(
-              `/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
-            )
-          }
+              `/book-tour/${extractNumericId(propertyId.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
+            );
+          }}
           bidApproved={bidApproved}
         />
       )}
@@ -281,11 +298,12 @@ export default function BookTourPage() {
                 {/* Book Tour Button */}
                 <div className="mt-6">
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      const propertyId = propertyData.id || params.id || "";
                       router.push(
-                        `/book-tour/${extractNumericId(propertyData.id.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
-                      )
-                    }
+                        `/book-tour/${extractNumericId(propertyId.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
+                      );
+                    }}
                     className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition-all"
                   >
                     Book a Tour
@@ -408,12 +426,13 @@ export default function BookTourPage() {
                   className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-all disabled:opacity-60"
                   disabled={bidLoading}
                   onClick={async () => {
-                    if (!propertyData?.id) return;
+                    const propertyId = propertyData?.id || params.id;
+                    if (!propertyId) return;
                     setBidLoading(true);
                     setBidError("");
                     try {
                       await tenantService.placeBid({
-                        listing_id: Number(propertyData.id),
+                        listing_id: Number(propertyId),
                         amount: bidAmount,
                         frequency: "YEARLY",
                         installments: installments as 2 | 4 | 8 | 10 | 12,

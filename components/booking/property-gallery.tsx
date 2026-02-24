@@ -9,6 +9,7 @@ interface PropertyGalleryProps {
 }
 
 export function PropertyGallery({ images }: PropertyGalleryProps) {
+  console.log("🖼️ PropertyGallery received images:", images);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [fullScreenImage, setFullScreenImage] = useState<number | null>(null);
 
@@ -32,7 +33,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
           className="col-span-2 row-span-2 relative cursor-pointer group bg-gray-100"
           onClick={() => setFullScreenImage(0)}
         >
-          {images[0] ? (
+          {images[0] && images[0].trim() !== "" ? (
             <Image
               src={images[0]}
               alt="Property main view"
@@ -53,7 +54,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
             className="relative cursor-pointer group bg-gray-100"
             onClick={() => setFullScreenImage(index + 1)}
           >
-            {image ? (
+            {image && image.trim() !== "" ? (
               <Image
                 src={image}
                 alt={`Property view ${index + 2}`}
