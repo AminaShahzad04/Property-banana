@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
@@ -21,11 +21,75 @@ const roles = [
   },
 ];
 
+const redirectToDashboard = (roleId: number, router: any) => {
+  console.log("🔀 [SELECT ROLE] Redirecting for role_id:", roleId);
+  switch (roleId) {
+    case 1:
+      router.push("/Dash/landlord");
+      break;
+    case 2:
+      router.push("/Dash/tenant");
+      break;
+    case 3:
+      router.push("/Dash/agent");
+      break;
+    case 4:
+      router.push("/Dash/manager");
+      break;
+    case 5:
+      router.push("/Dash/owner");
+      break;
+    case 6:
+      router.push("/Dash/admin");
+      break;
+    default:
+      console.warn("⚠️ [SELECT ROLE] Unknown role_id:", roleId);
+      router.push("/");
+  }
+};
+
 export default function SelectRolePage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<number>(2); // Default to Tenant
   const [loading, setLoading] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user already has a role assigned on page load
+  useEffect(() => {
+    const checkExistingRole = async () => {
+      try {
+        console.log("🔍 [SELECT ROLE] Checking existing role on page load...");
+        const roleStatus = await userService.getRoleStatus();
+        console.log("✅ [SELECT ROLE] Role status:", roleStatus);
+
+        if (
+          roleStatus.role_assigned &&
+          roleStatus.roles &&
+          roleStatus.roles.length > 0
+        ) {
+          const existingRole = roleStatus.roles[0];
+          console.log("✅ [SELECT ROLE] User already has role:", existingRole);
+          console.log(
+            "🔀 [SELECT ROLE] Redirecting to existing role dashboard...",
+          );
+          redirectToDashboard(existingRole.role_id, router);
+          return;
+        }
+
+        console.log(
+          "ℹ️ [SELECT ROLE] No role assigned, staying on select page",
+        );
+      } catch (error) {
+        console.error("❌ [SELECT ROLE] Error checking role:", error);
+        // If error checking role, stay on page to allow selection
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+
+    checkExistingRole();
+  }, [router]);
 
   const handleRoleSelection = async () => {
     setLoading(true);
@@ -35,58 +99,31 @@ export default function SelectRolePage() {
       console.log("🔄 [SELECT ROLE] Assigning role:", selectedRole);
       const assignResult = await userService.assignRole(selectedRole);
       console.log("✅ [SELECT ROLE] Role assigned successfully:", assignResult);
-      console.log(
-        "🔍 [SELECT ROLE] Full response:",
-        JSON.stringify(assignResult, null, 2),
-      );
 
       // Check if role assignment was successful
       if (!assignResult.success) {
         throw new Error(assignResult.message || "Role assignment failed");
       }
 
-      // Get the role_id from the response
-      const responseData = assignResult as any;
-      console.log("🔍 [SELECT ROLE] user_role object:", responseData.user_role);
-      console.log(
-        "🔍 [SELECT ROLE] role_id from response:",
-        responseData.user_role?.role_id,
-      );
+      // After successful assignment, call getRoleStatus to get the role info
+      console.log("🔍 [SELECT ROLE] Fetching role status after assignment...");
+      const roleStatus = await userService.getRoleStatus();
+      console.log("✅ [SELECT ROLE] Role status after assignment:", roleStatus);
 
-      const roleId = responseData.user_role?.role_id || selectedRole;
-      console.log("✅ [SELECT ROLE] Final role_id to use:", roleId);
-      console.log("✅ [SELECT ROLE] Selected role was:", selectedRole);
-
-      // Redirect based on assigned role
-      switch (roleId) {
-        case 1: // LANDLORD
-          console.log("🏠 [SELECT ROLE] Redirecting to landlord dashboard");
-          router.push("/Dash/landlord");
-          break;
-        case 2: // TENANT
-          console.log("🏠 [SELECT ROLE] Redirecting to tenant dashboard");
-          router.push("/Dash/tenant");
-          break;
-        case 3: // AGENT
-          console.log("🏠 [SELECT ROLE] Redirecting to agent dashboard");
-          router.push("/Dash/agent");
-          break;
-        case 4: // MANAGER
-          console.log("🏠 [SELECT ROLE] Redirecting to manager dashboard");
-          router.push("/Dash/manager");
-          break;
-        case 5: // OWNER
-          console.log("🏠 [SELECT ROLE] Redirecting to owner dashboard");
-          router.push("/Dash/owner");
-          break;
-        case 6: // ADMIN
-          console.log("🏠 [SELECT ROLE] Redirecting to admin dashboard");
-          router.push("/Dash/admin");
-          break;
-        default:
-          console.warn("⚠️ [SELECT ROLE] Unknown role_id:", roleId);
-          router.push("/");
+      if (
+        !roleStatus.role_assigned ||
+        !roleStatus.roles ||
+        roleStatus.roles.length === 0
+      ) {
+        throw new Error("Role status verification failed");
       }
+
+      // Get the assigned role from getRoleStatus response
+      const assignedRole = roleStatus.roles[0];
+      console.log("✅ [SELECT ROLE] Assigned role from status:", assignedRole);
+
+      // Redirect to the appropriate dashboard
+      redirectToDashboard(assignedRole.role_id, router);
     } catch (error: any) {
       console.error("❌ [SELECT ROLE] Role assignment failed:", error);
       console.error("❌ [SELECT ROLE] Error details:", {
@@ -97,6 +134,18 @@ export default function SelectRolePage() {
       setLoading(false);
     }
   };
+
+  // Show loading state while checking for existing role
+  if (checkingRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 to-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 to-white">
