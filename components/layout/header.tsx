@@ -26,10 +26,10 @@ export function Header() {
           const userProfile = await userService.getMyProfile();
 
           if (
-            (userProfile as any).user_roles &&
-            (userProfile as any).user_roles.length > 0
+            (userProfile as any).roles &&
+            (userProfile as any).roles.length > 0
           ) {
-            const primaryRole = (userProfile as any).user_roles[0];
+            const primaryRole = (userProfile as any).roles[0];
             const roleId = primaryRole.role_id;
 
             // Map role_id to dashboard URL
@@ -56,7 +56,7 @@ export function Header() {
                 setDashboardUrl("/");
             }
           } else {
-            // No user_roles in profile
+            // No roles in profile
             setDashboardUrl("/");
           }
         } else {

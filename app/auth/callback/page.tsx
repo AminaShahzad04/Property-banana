@@ -177,13 +177,14 @@ export default function AuthCallbackPage() {
           const userProfile = await userService.getMyProfile();
           console.log("✅ [AUTH CALLBACK] User profile:", userProfile);
 
+          // Check for roles array (actual API response structure)
           if (
-            (userProfile as any).user_roles &&
-            (userProfile as any).user_roles.length > 0
+            (userProfile as any).roles &&
+            (userProfile as any).roles.length > 0
           ) {
-            const primaryRole = (userProfile as any).user_roles[0];
+            const primaryRole = (userProfile as any).roles[0];
             const roleId = primaryRole.role_id;
-            const roleName = primaryRole.role?.role_name || "user";
+            const roleName = primaryRole.role_name || "user";
             console.log("✅ [AUTH CALLBACK] Found role:", { roleId, roleName });
             setStatus(`Redirecting to ${roleName} dashboard...`);
 
@@ -231,7 +232,7 @@ export default function AuthCallbackPage() {
             }
           } else {
             console.error(
-              "❌ [AUTH CALLBACK] No user_roles in profile:",
+              "❌ [AUTH CALLBACK] No roles in profile:",
               userProfile,
             );
             router.push("/auth/select-role");

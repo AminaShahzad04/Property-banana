@@ -77,18 +77,22 @@ export default function SelectRolePage() {
           const userProfile = await userService.getMyProfile();
           console.log("✅ [SELECT ROLE] User profile:", userProfile);
 
+          // Check for roles array (actual API response structure)
           if (
-            (userProfile as any).user_roles &&
-            (userProfile as any).user_roles.length > 0
+            (userProfile as any).roles &&
+            (userProfile as any).roles.length > 0
           ) {
-            const roleId = (userProfile as any).user_roles[0].role_id;
+            const roleId = (userProfile as any).roles[0].role_id;
             console.log("✅ [SELECT ROLE] Got role_id from profile:", roleId);
             redirectToDashboard(roleId, router);
             return;
           }
 
-          // If still can't find role_id, show error
-          console.error("❌ [SELECT ROLE] Role assigned but no role_id found");
+          // If can't find role_id, show error
+          console.error(
+            "❌ [SELECT ROLE] Role assigned but no role_id found in profile",
+          );
+          console.error("❌ [SELECT ROLE] Profile structure:", userProfile);
           setError("Unable to determine your role. Please contact support.");
         } else {
           console.log(
