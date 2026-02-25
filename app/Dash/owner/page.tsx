@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { PropertiesByStatusChart } from "@/components/dashboard/properties-by-status-chart";
+import { BidsFunnel } from "@/components/dashboard/bids-funnel";
 import { userService } from "@/api/user.service";
 
 const ownerStats = [
@@ -39,7 +41,7 @@ const ownerStats = [
     label: "Pending Approval",
     value: "12k",
     subtext: "2 urgent approval",
-    icon: "/analysis.png",
+    icon: "/Analysis.png",
   },
   {
     label: "Expired Lock Boxes",
@@ -83,6 +85,11 @@ export default function OwnerDashboard() {
       </div>
 
       <DashboardStats stats={ownerStats} columns={4} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <PropertiesByStatusChart />
+        <BidsFunnel />
+      </div>
     </div>
   );
 }
