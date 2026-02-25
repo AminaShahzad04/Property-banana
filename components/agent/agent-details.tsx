@@ -14,14 +14,25 @@ export function AgentDetails() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileData, perfData] = await Promise.all([
-          userService.getMyProfile(),
-          agentService.getPerformance(),
-        ]);
+        console.log("🔍 [AGENT DETAILS] Fetching profile and performance...");
+        const profileData = await userService.getMyProfile();
+        console.log("✅ [AGENT DETAILS] Profile data:", profileData);
         setProfile(profileData);
-        setPerformance(perfData);
+
+        // Try to fetch performance, but don't fail if it errors
+        try {
+          const perfData = await agentService.getPerformance();
+          console.log("✅ [AGENT DETAILS] Performance data:", perfData);
+          setPerformance(perfData);
+        } catch (perfError) {
+          console.log(
+            "ℹ️ [AGENT DETAILS] Performance data not available:",
+            perfError,
+          );
+          setPerformance(null);
+        }
       } catch (error) {
-        console.error("Failed to fetch profile:", error);
+        console.error("❌ [AGENT DETAILS] Failed to fetch profile:", error);
       } finally {
         setLoading(false);
       }
@@ -45,9 +56,9 @@ export function AgentDetails() {
       </h1>
       <div className="w-full bg-card p-12 max-w-4xl flex flex-col items-center">
         <div className="flex flex-col items-start w-full">
-          {profile?.photo_url ? (
+          {profile?.user?.photo_url ? (
             <Image
-              src={profile.photo_url}
+              src={profile.user.photo_url}
               alt="Agent Profile"
               width={100}
               height={100}
@@ -63,25 +74,27 @@ export function AgentDetails() {
               <div>
                 <div className="font-semibold text-sm">Full Name</div>
                 <div className="text-gray-700">
-                  {profile?.full_name || "N/A"}
+                  {profile?.user?.full_name || "N/A"}
                 </div>
               </div>
               <div>
                 <div className="font-semibold text-sm">Phone Number</div>
                 <div className="text-gray-400">
-                  {profile?.phone_no || "N/A"}
+                  {profile?.user?.phone_no || "N/A"}
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-6">
               <div>
                 <div className="font-semibold text-sm">Email</div>
-                <div className="text-gray-400">{profile?.email || "N/A"}</div>
+                <div className="text-gray-400">
+                  {profile?.user?.email || "N/A"}
+                </div>
               </div>
               <div>
                 <div className="font-semibold text-sm">WhatsApp</div>
                 <div className="text-gray-400">
-                  {profile?.whatsapp_no || "N/A"}
+                  {profile?.user?.whatsapp_no || "N/A"}
                 </div>
               </div>
             </div>
