@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
 import { brokerageService } from "@/api/brokerage.service";
-import { agentService } from "@/api/agent.service";
 
 interface Manager {
   id: string;
@@ -19,47 +18,35 @@ interface Manager {
   lastActivity: string;
 }
 
+// Note: API endpoint /dashboard/brokerage/managers does not exist in openapi.yaml
+// Using mock data until backend implements the endpoint
+const mockManagers: Manager[] = [
+  {
+    id: "1",
+    name: "John Manager",
+    email: "john.manager@example.com",
+    contactNumber: "+971501234567",
+    agents: 5,
+    noOfProperties: 23,
+    status: "Active",
+    lastActivity: "2 hours ago",
+  },
+  {
+    id: "2",
+    name: "Sarah Williams",
+    email: "sarah.williams@example.com",
+    contactNumber: "+971507654321",
+    agents: 8,
+    noOfProperties: 41,
+    status: "Active",
+    lastActivity: "1 day ago",
+  },
+];
+
 export function ManagersManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [managers, setManagers] = useState<Manager[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchManagers();
-  }, []);
-
-  const fetchManagers = async () => {
-    try {
-      setLoading(true);
-      // Note: Backend doesn't have a "list managers" endpoint yet
-      // Using agent clients as a demonstration of fetching real data
-      // You'll need a proper /dashboard/brokerage/managers or /dashboard/owner/managers endpoint
-      const response = await agentService.getClients();
-
-      // Transform the data to match our Manager interface
-      const transformedManagers: Manager[] = response.clients
-        .filter((client) => client.type === "Landlord") // Filter for managers/landlords
-        .map((client) => ({
-          id: client.id,
-          name: client.fullName,
-          email: client.email,
-          contactNumber: client.phone,
-          agents: 0, // Backend doesn't provide agent count yet
-          noOfProperties: client.propertiesCount,
-          status: "Active" as const,
-          lastActivity: "N/A", // Backend doesn't provide last activity yet
-        }));
-
-      setManagers(transformedManagers);
-    } catch (error) {
-      console.error("Failed to fetch managers:", error);
-      // Keep empty array on error
-      setManagers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [managers] = useState<Manager[]>(mockManagers);
 
   const handleAddManager = async () => {
     // This would open a modal/form to collect manager details
@@ -73,8 +60,7 @@ export function ManagersManagement() {
     try {
       await brokerageService.createManager(managerData);
       alert("Manager created successfully!");
-      // Refresh manager list
-      fetchManagers();
+      // Note: No endpoint to refresh manager list, would need to manually update state
     } catch (error) {
       console.error("Failed to create manager:", error);
       alert("Failed to create manager. Please try again.");
@@ -182,27 +168,13 @@ export function ManagersManagement() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        {loading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Loading managers...</p>
-          </div>
-        ) : managers.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">
-              No managers found. Add your first manager to get started.
-            </p>
-          </div>
-        ) : (
-          <>
-            <Table columns={columns} data={filteredData} />
-            <Pagination
-              totalRows={filteredData.length}
-              rowsPerPage={8}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
-          </>
-        )}
+        <Table columns={columns} data={filteredData} />
+        <Pagination
+          totalRows={filteredData.length}
+          rowsPerPage={8}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

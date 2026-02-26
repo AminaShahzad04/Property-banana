@@ -397,13 +397,13 @@ export default function BookingPage() {
           )}
 
           {step === 3 && bookedTour && (
-            <div className="text-center py-4 bg-card shadow-lg rounded-xl">
-              <h2 className="text-3xl font-bold text-gray-900 p-8">
+            <div className="text-center py-4">
+              <h2 className="text-3xl font-bold text-gray-900 m-8">
                 Booking confirmed
               </h2>
 
               {/* Date and Time Info from Backend */}
-              <div className="max-w-lg mx-auto bg-white">
+              <div className="max-w-lg mx-auto bg-white p-6">
                 <div className="space-y-6 flex justify-between">
                   {/* Date */}
                   <div className="flex items-start gap-4">
@@ -447,34 +447,6 @@ export default function BookingPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Tour ID and Status */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div>
-                      Tour ID:{" "}
-                      <span className="font-semibold">
-                        #{bookedTour.tour_id}
-                      </span>
-                    </div>
-                    <div>
-                      Status:{" "}
-                      <span className="font-semibold text-green-600">
-                        {bookedTour.status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="flex justify-center mt-8">
-                <button
-                  onClick={() => router.push("/Dash/tenant/tours")}
-                  className="px-8 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors"
-                >
-                  View My Tours
-                </button>
               </div>
             </div>
           )}

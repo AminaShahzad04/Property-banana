@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
 import { brokerageService } from "@/api/brokerage.service";
-import { agentService } from "@/api/agent.service";
 
 interface Agent {
   id: string;
@@ -19,45 +18,35 @@ interface Agent {
   lastActivity: string;
 }
 
+// Note: API endpoint /dashboard/brokerage/agents does not exist in openapi.yaml
+// Using mock data until backend implements the endpoint
+const mockAgents: Agent[] = [
+  {
+    id: "1",
+    agent: "Ahmed Ali",
+    manager: "John Manager",
+    brnNumber: "BRN-2024-001",
+    noOfProperties: 12,
+    noOfTours: 45,
+    status: "Active",
+    lastActivity: "1 hour ago",
+  },
+  {
+    id: "2",
+    agent: "Mohammed Hassan",
+    manager: "Sarah Williams",
+    brnNumber: "BRN-2024-002",
+    noOfProperties: 18,
+    noOfTours: 67,
+    status: "Active",
+    lastActivity: "3 hours ago",
+  },
+];
+
 export function AgentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAgents();
-  }, []);
-
-  const fetchAgents = async () => {
-    try {
-      setLoading(true);
-      // Note: Backend doesn't have a "list agents" endpoint yet
-      // Using agent clients as a demonstration of fetching real data
-      // You'll need a proper /dashboard/brokerage/agents or /dashboard/owner/agents endpoint
-      const response = await agentService.getClients();
-      
-      // Transform the data to match our Agent interface
-      const transformedAgents: Agent[] = response.clients.map((client, index) => ({
-        id: client.id,
-        agent: client.fullName,
-        manager: "N/A", // Backend doesn't provide manager info yet
-        brnNumber: "N/A", // Backend doesn't provide BRN number yet
-        noOfProperties: client.propertiesCount,
-        noOfTours: client.toursCount,
-        status: "Active" as const,
-        lastActivity: "N/A", // Backend doesn't provide last activity yet
-      }));
-      
-      setAgents(transformedAgents);
-    } catch (error) {
-      console.error("Failed to fetch agents:", error);
-      // Keep empty array on error
-      setAgents([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [agents] = useState<Agent[]>(mockAgents);
 
   const handleAddAgent = async () => {
     // This would open a modal/form to collect agent details
@@ -72,8 +61,7 @@ export function AgentManagement() {
     try {
       await brokerageService.createAgent(agentData);
       alert("Agent created successfully!");
-      // Refresh agent list
-      fetchAgents();
+      // Note: No endpoint to refresh agent list, would need to manually update state
     } catch (error) {
       console.error("Failed to create agent:", error);
       alert("Failed to create agent. Please try again.");
@@ -187,25 +175,13 @@ export function AgentManagement() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        {loading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Loading agents...</p>
-          </div>
-        ) : agents.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No agents found. Add your first agent to get started.</p>
-          </div>
-        ) : (
-          <>
-            <Table columns={columns} data={filteredData} />
-            <Pagination
-              totalRows={filteredData.length}
-              rowsPerPage={8}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
-            />
-          </>
-        )}
+        <Table columns={columns} data={filteredData} />
+        <Pagination
+          totalRows={filteredData.length}
+          rowsPerPage={8}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

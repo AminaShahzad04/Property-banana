@@ -17,6 +17,8 @@ interface Landlord {
   assignedAgent: string;
 }
 
+// Note: API endpoint /dashboard/brokerage/landlords does not exist in openapi.yaml
+// Using mock data until backend implements the endpoint
 const mockLandlords: Landlord[] = [
   {
     id: "1",
@@ -24,7 +26,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 5,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 3,
     assignedAgent: "John Albert",
   },
@@ -34,7 +36,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 6,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 4,
     assignedAgent: "John Albert",
   },
@@ -44,7 +46,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 8,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 9,
     assignedAgent: "John Albert",
   },
@@ -54,7 +56,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 7,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 0,
     assignedAgent: "John Albert",
   },
@@ -64,7 +66,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 89,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 7,
     assignedAgent: "John Albert",
   },
@@ -74,7 +76,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 5,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 3,
     assignedAgent: "John Albert",
   },
@@ -84,7 +86,7 @@ const mockLandlords: Landlord[] = [
     email: "abc@gmail.com",
     phone: "023-3324244-4433",
     noOfProperties: 3,
-    priceRange: "ADE 12,000/year",
+    priceRange: "AED 12,000/year",
     totalSchedule: 6,
     assignedAgent: "John Albert",
   },
