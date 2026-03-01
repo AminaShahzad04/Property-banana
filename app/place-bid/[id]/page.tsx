@@ -11,6 +11,8 @@ import { tenantService } from "@/api/tenant.service";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { LoginPromptModal } from "@/components/auth/LoginPromptModal";
 
 // Extract numeric ID from strings like 'prop_2' -> '2'
 const extractNumericId = (id: string): string => {
@@ -24,6 +26,7 @@ export default function PlaceBidPage() {
   const searchParams = useSearchParams();
   const propertyTitle = searchParams.get("title") || "Property";
   const listingId = params.id ? Number(params.id) : 0;
+  const { isAuthenticated } = useAuth();
 
   const [bidAmount, setBidAmount] = useState("444,000");
   const [selectedInstallments, setSelectedInstallments] = useState(2);
@@ -31,13 +34,28 @@ export default function PlaceBidPage() {
   const [bidsUsed, setBidsUsed] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fetchingBids, setFetchingBids] = useState(true);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const suggestedMin = 430000;
   const suggestedMax = 460000;
   const bidValue = parseInt(bidAmount.replace(/,/g, ""));
 
-  // Fetch existing bids on mount
+  // Check authentication on mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      console.log("⚠️ User not authenticated, showing login prompt");
+      setShowLoginPrompt(true);
+      setFetchingBids(false);
+    }
+  }, [isAuthenticated]);
+
+  // Fetch existing bids on mount (only if authenticated)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setFetchingBids(false);
+      return;
+    }
+
     const fetchBids = async () => {
       try {
         setFetchingBids(true);
@@ -65,7 +83,7 @@ export default function PlaceBidPage() {
     if (listingId) {
       fetchBids();
     }
-  }, [listingId]);
+  }, [listingId, isAuthenticated]);
 
   const getBidStrength = () => {
     const midPoint = (suggestedMin + suggestedMax) / 2;
@@ -400,6 +418,16 @@ export default function PlaceBidPage() {
       )}
 
       <Footer />
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={() => {
+          setShowLoginPrompt(false);
+          router.back();
+        }}
+        message="To place a bid on this property"
+      />
     </div>
   );
 }
