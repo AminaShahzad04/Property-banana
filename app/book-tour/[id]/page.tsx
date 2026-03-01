@@ -207,6 +207,12 @@ export default function BookTourPage() {
           rating={propertyData.rating}
           reviews={propertyData.reviews}
           onPlaceBid={() => {
+            // Check if user is authenticated
+            if (!isAuthenticated) {
+              setShowLoginPrompt(true);
+              return;
+            }
+
             if (bidApproved) {
               setShowRentPropertyPage(true);
             } else {
@@ -217,6 +223,12 @@ export default function BookTourPage() {
             }
           }}
           onBookTour={() => {
+            // Check if user is authenticated
+            if (!isAuthenticated) {
+              setShowLoginPrompt(true);
+              return;
+            }
+
             const propertyId = propertyData.id || params.id || "";
             router.push(
               `/book-tour/${extractNumericId(propertyId.toString())}/booking?title=${encodeURIComponent(propertyData.name)}`,
@@ -617,7 +629,7 @@ export default function BookTourPage() {
       <LoginPromptModal
         isOpen={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
-        message="To place a bid on this property"
+        message="Login first to place a bid"
       />
 
       {/* Place Bid Modal */}
