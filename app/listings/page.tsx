@@ -10,7 +10,7 @@ import { listingService, type Listing } from "@/api/listing.service";
 import { tenantService } from "@/api/tenant.service";
 import { useAuth } from "@/hooks/useAuth";
 
-// Extract numeric ID from strings like 'prop_2' -> '2'
+// Extract numeric ID from strings like 'prop_2' ->'2'
 const extractNumericId = (id: string): string => {
   const match = id.match(/\d+$/);
   return match ? match[0] : id;
