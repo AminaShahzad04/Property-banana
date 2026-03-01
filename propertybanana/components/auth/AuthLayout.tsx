@@ -1,0 +1,34 @@
+import { PropertyManagersLogo } from "@/components/layout/Logo";
+import type { ReactNode } from "react";
+
+interface AuthLayoutProps {
+  children: ReactNode;
+  backgroundImage?: string;
+}
+
+export function AuthLayout({
+  children,
+  backgroundImage = "/hero_background.png",
+}: AuthLayoutProps) {
+  return (
+    <div className="min-h-screen  bg-card grid grid-cols-1 lg:grid-cols-2">
+      {/* Background Image - Hidden on mobile */}
+      <div
+        className="hidden  m-4 rounded-4xl lg:block relative"
+        style={{
+          backgroundImage: `url('${backgroundImage}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      ></div>
+
+      {/* Form Section */}
+      <div className="flex flex-col justify-center px-6 py-12 sm:px-8 lg:px-12 bg-card lg:bg-gray-50">
+        <div className="w-full max-w-md mx-auto">
+          <PropertyManagersLogo />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
