@@ -380,191 +380,226 @@ export default function BookTourPage() {
                 <h3 className="text-2xl font-bold text-center mb-4">
                   Place a bid
                 </h3>
-                {/* Progress bar showing bids used */}
-                <div className="mb-4">
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        bidsUsed === 3
-                          ? "bg-green-500"
-                          : bidsUsed === 2
-                            ? "bg-yellow-500"
-                            : bidsUsed === 1
-                              ? "bg-orange-500"
-                              : "bg-gray-300"
-                      }`}
-                      style={{ width: `${(bidsUsed / 3) * 100}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-gray-500">
-                      {bidsUsed}/3 Bids Used
-                    </span>
-                    <span
-                      className={`text-xs font-semibold ${
-                        bidsLeft === 0
-                          ? "text-red-500"
-                          : bidsLeft === 1
-                            ? "text-yellow-500"
-                            : "text-green-500"
-                      }`}
-                    >
-                      {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 px-2">
-                  {/* Left - Hand with Money */}
-                  <div className="flex-shrink-0">
-                    <Image
-                      src="/bid.png"
-                      alt="Bid"
-                      width={56}
-                      height={56}
-                      className="object-contain"
-                    />
-                  </div>
-                  {/* Middle - Slider and Input */}
-                  <div className="flex-1">
-                    <div className="relative w-full" style={{ height: "48px" }}>
-                      {/* Thin slider track */}
-                      <div
-                        className="absolute left-0 right-0 top-1/2"
-                        style={{ height: "8px", transform: "translateY(-50%)" }}
-                      >
-                        {/* Uncovered track */}
-                        <div className="w-full h-full rounded-full bg-yellow-100" />
-                        {/* Covered track */}
-                        <div
-                          className="absolute left-0 top-0 h-full bg-yellow-400 rounded-full"
-                          style={{
-                            width: `${((bidAmount - minBid) / (maxBid - minBid)) * 100}%`,
-                          }}
-                        ></div>
+
+                {/* Show login prompt if not authenticated */}
+                {!isAuthenticated ? (
+                  <div className="py-8">
+                    <div className="text-center mb-6">
+                      <div className="flex justify-center mb-4">
+                        <Image
+                          src="/bid.png"
+                          alt="Bid"
+                          width={80}
+                          height={80}
+                          className="object-contain"
+                        />
                       </div>
-                      {/* Slider input (transparent, overlays the track) */}
-                      <input
-                        type="range"
-                        min={minBid}
-                        max={maxBid}
-                        step={1000}
-                        value={bidAmount}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setBidAmount(val);
-                          setBidInput(val.toString());
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                        style={{ WebkitAppearance: "none", appearance: "none" }}
-                      />
-                      {/* Thumb on the track, with a little green */}
-                      <div
-                        className="absolute z-30"
-                        style={{
-                          left: `calc(${((bidAmount - minBid) / (maxBid - minBid)) * 100}% )`,
-                          top: "50%",
-                          transform: "translate(-50%, -50%)",
-                        }}
-                      >
-                        <div className="w-10 h-10 rounded-full border-4 border-yellow-200 bg-gradient-to-br from-yellow-200 via-yellow-300 to-green-400 shadow-lg" />
-                      </div>
-                    </div>
-                    {/* Min/Max Labels */}
-                    <div className="flex justify-between text-xs text-gray-600 font-medium mt-1">
-                      <span>100,000 AED</span>
-                      <span>700,000 AED</span>
-                    </div>
-                    {/* Input field */}
-                    <input
-                      type="number"
-                      min={minBid}
-                      max={maxBid}
-                      step={1000}
-                      value={bidInput}
-                      onChange={(e) => {
-                        let val = e.target.value.replace(/[^0-9]/g, "");
-                        if (val === "") val = minBid.toString();
-                        let num = Math.max(
-                          minBid,
-                          Math.min(maxBid, Number(val)),
-                        );
-                        setBidInput(num.toString());
-                        setBidAmount(num);
-                      }}
-                      className="mt-4 w-full border border-gray-300 rounded px-3 py-2 text-lg font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      placeholder="AED"
-                    />
-                  </div>
-                </div>
-                {/* Installments selection */}
-                <div className="mt-6">
-                  <div className="font-semibold text-center">
-                    Select number of installments
-                  </div>
-                  <div className="text-center text-gray-500 text-sm mb-2">
-                    In how many installments do you want to pay?
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 justify-items-center max-w-xs mx-auto mb-2">
-                    {[2, 4, 6, 8, 10, 12].map((num, idx) => (
+                      <p className="text-gray-600 text-lg mb-6">
+                        Login first to place a bid
+                      </p>
                       <button
-                        key={num}
-                        type="button"
-                        onClick={() => setInstallments(num)}
-                        className={`w-16 h-16 rounded-full border flex items-center justify-center text-lg font-bold transition-all duration-150 ${installments === num ? "bg-yellow-300 border-yellow-400 text-black shadow-md" : "bg-white border-gray-300 text-gray-700"}`}
-                        style={{ marginBottom: idx < 3 ? "0.5rem" : undefined }}
+                        onClick={() => router.push("/sign-in")}
+                        className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-800 transition-colors"
                       >
-                        {num}
+                        Continue to Login
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </div>
-                {/* Submit button */}
-                <Tooltip
-                  content="You have already placed 3 bids for this property"
-                  disabled={bidsLeft > 0}
-                >
-                  <button
-                    className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={bidLoading || bidsLeft === 0}
-                    onClick={async () => {
-                      // Check if user is authenticated
-                      if (!isAuthenticated) {
-                        setShowLoginPrompt(true);
-                        return;
-                      }
-                      const propertyId = propertyData?.id || params.id;
-                      if (!propertyId) return;
-                      setBidLoading(true);
-                      setBidError("");
-                      try {
-                        await tenantService.placeBid({
-                          listing_id: Number(propertyId),
-                          amount: bidAmount,
-                          frequency: "YEARLY",
-                          installments: installments as 2 | 4 | 8 | 10 | 12,
-                        });
-                        // Update bid count
-                        setBidsUsed(bidsUsed + 1);
-                        setBidsLeft(Math.max(0, bidsLeft - 1));
-                        setBidApproved(true);
-                      } catch (e: any) {
-                        setBidError(e.message || "Failed to place bid");
-                      } finally {
-                        setBidLoading(false);
-                      }
-                    }}
-                  >
-                    {bidLoading
-                      ? "Submitting..."
-                      : bidsLeft === 0
-                        ? "No Bids Left"
-                        : "Submit bid"}
-                  </button>
-                </Tooltip>
-                {bidError && (
-                  <div className="text-red-600 text-center mt-2">
-                    {bidError}
-                  </div>
+                ) : (
+                  <>
+                    {/* Progress bar showing bids used */}
+                    <div className="mb-4">
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            bidsUsed === 3
+                              ? "bg-green-500"
+                              : bidsUsed === 2
+                                ? "bg-yellow-500"
+                                : bidsUsed === 1
+                                  ? "bg-orange-500"
+                                  : "bg-gray-300"
+                          }`}
+                          style={{ width: `${(bidsUsed / 3) * 100}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-xs text-gray-500">
+                          {bidsUsed}/3 Bids Used
+                        </span>
+                        <span
+                          className={`text-xs font-semibold ${
+                            bidsLeft === 0
+                              ? "text-red-500"
+                              : bidsLeft === 1
+                                ? "text-yellow-500"
+                                : "text-green-500"
+                          }`}
+                        >
+                          {bidsLeft} Bid{bidsLeft === 1 ? "" : "s"} Left
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 px-2">
+                      {/* Left - Hand with Money */}
+                      <div className="flex-shrink-0">
+                        <Image
+                          src="/bid.png"
+                          alt="Bid"
+                          width={56}
+                          height={56}
+                          className="object-contain"
+                        />
+                      </div>
+                      {/* Middle - Slider and Input */}
+                      <div className="flex-1">
+                        <div
+                          className="relative w-full"
+                          style={{ height: "48px" }}
+                        >
+                          {/* Thin slider track */}
+                          <div
+                            className="absolute left-0 right-0 top-1/2"
+                            style={{
+                              height: "8px",
+                              transform: "translateY(-50%)",
+                            }}
+                          >
+                            {/* Uncovered track */}
+                            <div className="w-full h-full rounded-full bg-yellow-100" />
+                            {/* Covered track */}
+                            <div
+                              className="absolute left-0 top-0 h-full bg-yellow-400 rounded-full"
+                              style={{
+                                width: `${((bidAmount - minBid) / (maxBid - minBid)) * 100}%`,
+                              }}
+                            ></div>
+                          </div>
+                          {/* Slider input (transparent, overlays the track) */}
+                          <input
+                            type="range"
+                            min={minBid}
+                            max={maxBid}
+                            step={1000}
+                            value={bidAmount}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setBidAmount(val);
+                              setBidInput(val.toString());
+                            }}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                            style={{
+                              WebkitAppearance: "none",
+                              appearance: "none",
+                            }}
+                          />
+                          {/* Thumb on the track, with a little green */}
+                          <div
+                            className="absolute z-30"
+                            style={{
+                              left: `calc(${((bidAmount - minBid) / (maxBid - minBid)) * 100}% )`,
+                              top: "50%",
+                              transform: "translate(-50%, -50%)",
+                            }}
+                          >
+                            <div className="w-10 h-10 rounded-full border-4 border-yellow-200 bg-gradient-to-br from-yellow-200 via-yellow-300 to-green-400 shadow-lg" />
+                          </div>
+                        </div>
+                        {/* Min/Max Labels */}
+                        <div className="flex justify-between text-xs text-gray-600 font-medium mt-1">
+                          <span>100,000 AED</span>
+                          <span>700,000 AED</span>
+                        </div>
+                        {/* Input field */}
+                        <input
+                          type="number"
+                          min={minBid}
+                          max={maxBid}
+                          step={1000}
+                          value={bidInput}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/[^0-9]/g, "");
+                            if (val === "") val = minBid.toString();
+                            let num = Math.max(
+                              minBid,
+                              Math.min(maxBid, Number(val)),
+                            );
+                            setBidInput(num.toString());
+                            setBidAmount(num);
+                          }}
+                          className="mt-4 w-full border border-gray-300 rounded px-3 py-2 text-lg font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          placeholder="AED"
+                        />
+                      </div>
+                    </div>
+                    {/* Installments selection */}
+                    <div className="mt-6">
+                      <div className="font-semibold text-center">
+                        Select number of installments
+                      </div>
+                      <div className="text-center text-gray-500 text-sm mb-2">
+                        In how many installments do you want to pay?
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 justify-items-center max-w-xs mx-auto mb-2">
+                        {[2, 4, 6, 8, 10, 12].map((num, idx) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => setInstallments(num)}
+                            className={`w-16 h-16 rounded-full border flex items-center justify-center text-lg font-bold transition-all duration-150 ${installments === num ? "bg-yellow-300 border-yellow-400 text-black shadow-md" : "bg-white border-gray-300 text-gray-700"}`}
+                            style={{
+                              marginBottom: idx < 3 ? "0.5rem" : undefined,
+                            }}
+                          >
+                            {num}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Submit button */}
+                    <Tooltip
+                      content="You have already placed 3 bids for this property"
+                      disabled={bidsLeft > 0}
+                    >
+                      <button
+                        className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={bidLoading || bidsLeft === 0}
+                        onClick={async () => {
+                          const propertyId = propertyData?.id || params.id;
+                          if (!propertyId) return;
+                          setBidLoading(true);
+                          setBidError("");
+                          try {
+                            await tenantService.placeBid({
+                              listing_id: Number(propertyId),
+                              amount: bidAmount,
+                              frequency: "YEARLY",
+                              installments: installments as 2 | 4 | 8 | 10 | 12,
+                            });
+                            // Update bid count
+                            setBidsUsed(bidsUsed + 1);
+                            setBidsLeft(Math.max(0, bidsLeft - 1));
+                            setBidApproved(true);
+                          } catch (e: any) {
+                            setBidError(e.message || "Failed to place bid");
+                          } finally {
+                            setBidLoading(false);
+                          }
+                        }}
+                      >
+                        {bidLoading
+                          ? "Submitting..."
+                          : bidsLeft === 0
+                            ? "No Bids Left"
+                            : "Submit bid"}
+                      </button>
+                    </Tooltip>
+                    {bidError && (
+                      <div className="text-red-600 text-center mt-2">
+                        {bidError}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 

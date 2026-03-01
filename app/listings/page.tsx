@@ -39,16 +39,17 @@ export default function ListingsPage() {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      
+
       // Map filters to the API query params
       const mappedFilters: any = {
         page: currentPage,
         limit: itemsPerPage,
       };
-      
+
       if (filters) {
         if (filters.location) mappedFilters.location = filters.location;
-        if (filters.property_type) mappedFilters.propertyType = filters.property_type;
+        if (filters.property_type)
+          mappedFilters.propertyType = filters.property_type;
         if (filters.bedrooms) mappedFilters.beds = filters.bedrooms;
         if (filters.bathrooms) mappedFilters.baths = filters.bathrooms;
         if (filters.price_min) mappedFilters.minPrice = filters.price_min;
@@ -56,26 +57,29 @@ export default function ListingsPage() {
         if (filters.area_min) mappedFilters.minArea = filters.area_min;
         if (filters.area_max) mappedFilters.maxArea = filters.area_max;
       }
-      
+
       // Use tenant endpoint if authenticated, public endpoint otherwise
       let response;
       if (isAuthenticated) {
         // Authenticated users: use tenant endpoint
         console.log("🔐 Using authenticated tenant endpoint");
-        const tenantResponse = await tenantService.searchListings(mappedFilters);
+        const tenantResponse =
+          await tenantService.searchListings(mappedFilters);
         // Normalize tenant response to match public API structure
         response = {
           listings: tenantResponse.listings || [],
           total: tenantResponse.listings?.length || 0,
           page: currentPage,
-          totalPages: Math.ceil((tenantResponse.listings?.length || 0) / itemsPerPage),
+          totalPages: Math.ceil(
+            (tenantResponse.listings?.length || 0) / itemsPerPage,
+          ),
         };
       } else {
         // Non-authenticated users: use public endpoint
         console.log("🌐 Using public listing endpoint");
         response = await listingService.searchListings(mappedFilters);
       }
-      
+
       setListings(response.listings || []);
       setTotalResults(response.total || 0);
       setTotalPages(response.totalPages || 0);
