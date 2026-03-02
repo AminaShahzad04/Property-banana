@@ -88,7 +88,7 @@ export function LandlordTable() {
     },
     {
       key: "toursCount",
-      header: "Total Tours",
+      header: "Total Viewings",
       className:
         "px-6 py-4 text-green-600 font-semibold text-sm cursor-pointer",
     },

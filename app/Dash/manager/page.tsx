@@ -3,7 +3,7 @@ import { ActivityFeed } from "@/components/dashboard/activity-feed";
 
 const managerStats = [
   {
-    label: "Upcoming Tour today",
+    label: "Upcoming Viewing today",
     value: "5",
     subtext: "Next at 2:00 PM",
     icon: "/destination.png",

@@ -24,7 +24,7 @@ const mockActivities = [
   },
   {
     id: 3,
-    type: "House tour completed",
+    type: "House viewing completed",
     description:
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
     image: "/places/image3.jpg",

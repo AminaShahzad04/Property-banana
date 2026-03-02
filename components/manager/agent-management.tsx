@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
@@ -86,6 +86,11 @@ const mockAgents: Agent[] = [
 export function AgentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Filter data based on search term
   const filteredData = mockAgents.filter((agent) => {
@@ -185,7 +190,7 @@ export function AgentManagement() {
       <div className="bg-white rounded-lg shadow p-6">
         <Table columns={columns} data={filteredData} />
         <Pagination
-          totalRows={2500}
+          totalRows={filteredData.length}
           rowsPerPage={8}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

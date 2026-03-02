@@ -32,7 +32,7 @@ const ownerStats = [
     icon: "/house.png",
   },
   {
-    label: "Pending Tour today",
+    label: "Pending Viewing today",
     value: "5",
     subtext: "Next at 2:00 PM",
     icon: "/destination.png",

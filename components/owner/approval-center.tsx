@@ -35,7 +35,7 @@ const mockApprovals: ApprovalRequest[] = [
   },
   {
     id: "3",
-    category: "Tour Reschedule",
+    category: "Viewing Reschedule",
     categoryColor: "bg-purple-500",
     title: "Update property price from 115,000 to 120,000AED",
     agent: "Sarah Johnson",

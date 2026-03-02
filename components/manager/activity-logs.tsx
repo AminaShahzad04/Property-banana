@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -49,7 +49,7 @@ const mockActivityLogs: ActivityLog[] = [
     timestamp: "25-01-15 10:30 AM",
     user: "John Albert(agent)",
     actionType: "Reschedule",
-    entity: "Tour",
+    entity: "Viewing",
     description: "Updated rental price from AED 80k to AED 85k",
     status: "Approved",
   },
@@ -76,7 +76,7 @@ const mockActivityLogs: ActivityLog[] = [
     timestamp: "25-01-15 10:30 AM",
     user: "John Albert(agent)",
     actionType: "Approve",
-    entity: "Tour",
+    entity: "Viewing",
     description: "Updated rental price from AED 80k to AED 85k",
     status: "Rejected",
   },
@@ -85,6 +85,11 @@ const mockActivityLogs: ActivityLog[] = [
 export function ActivityLogs() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const filteredData = mockActivityLogs.filter((log) => {
     const matchesSearch =
@@ -186,7 +191,7 @@ export function ActivityLogs() {
       <div className="bg-white rounded-lg shadow p-6">
         <Table columns={columns} data={filteredData} />
         <Pagination
-          totalRows={256000}
+          totalRows={filteredData.length}
           rowsPerPage={8}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

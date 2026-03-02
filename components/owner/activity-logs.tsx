@@ -49,7 +49,7 @@ const mockLogs: ActivityLog[] = [
     timestamp: "25-01-15 10:30 AM",
     user: "John Albert(agent)",
     actionType: "Reschedule",
-    entity: "Tour",
+    entity: "Viewing",
     description: "Updated rental price from AED 80k to AED 85k",
     status: "Approved",
   },
@@ -76,7 +76,7 @@ const mockLogs: ActivityLog[] = [
     timestamp: "25-01-15 10:30 AM",
     user: "John Albert(agent)",
     actionType: "Approve",
-    entity: "Tour",
+    entity: "Viewing",
     description: "Updated rental price from AED 80k to AED 85k",
     status: "Rejected",
   },
@@ -97,6 +97,11 @@ export function ActivityLogs() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const rowsPerPage = 8;
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

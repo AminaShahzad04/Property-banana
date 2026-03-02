@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
-import Image from "next/image";
 import { MoreVertical } from "lucide-react";
 
-interface Tour {
+interface Viewing {
   id: string;
   dateTime: string;
   propertyImage: string;
@@ -19,7 +18,7 @@ interface Tour {
   status: "Completed" | "Pending Landlord" | "Scheduled" | "Cancelled Landlord";
 }
 
-const mockTours: Tour[] = [
+const mockViewings: Viewing[] = [
   {
     id: "1",
     dateTime: "25-01-15 10:30 AM",
@@ -105,13 +104,20 @@ export function ToursManagement() {
   const [filterType, setFilterType] = useState("all");
   const [portfolioType, setPortfolioType] = useState("high");
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, portfolioType]);
+
   // Filter data based on search term
-  const filteredData = mockTours.filter((tour) => {
+  const filteredData = mockViewings.filter((viewing) => {
     const matchesSearch =
-      tour.propertyTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tour.propertyLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tour.landlordName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tour.tenant.toLowerCase().includes(searchTerm.toLowerCase());
+      viewing.propertyTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      viewing.propertyLocation
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      viewing.landlordName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      viewing.tenant.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -119,80 +125,68 @@ export function ToursManagement() {
     {
       key: "dateTime",
       header: "Date & Time",
-      render: (tour: Tour) => (
-        <span className="text-gray-700 text-sm">{tour.dateTime}</span>
+      render: (viewing: Viewing) => (
+        <span className="text-gray-700 text-sm">{viewing.dateTime}</span>
       ),
     },
     {
       key: "property",
       header: "Property",
-      render: (tour: Tour) => (
-        <div className="flex items-center gap-3">
-          <Image
-            src={tour.propertyImage}
-            alt={tour.propertyTitle}
-            width={60}
-            height={60}
-            className="rounded-lg object-cover"
-            onError={(e) => {
-              e.currentTarget.src = "/house.png";
-            }}
-          />
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900">
-              {tour.propertyTitle}
-            </span>
-            <span className="text-xs text-gray-500">
-              {tour.propertyLocation}
-            </span>
-          </div>
+      render: (viewing: Viewing) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">
+            {viewing.propertyTitle}
+          </span>
+          <span className="text-xs text-gray-500">
+            {viewing.propertyLocation}
+          </span>
         </div>
       ),
     },
     {
       key: "landlordName",
       header: "Landlord Name",
-      render: (tour: Tour) => (
-        <span className="text-gray-700">{tour.landlordName}</span>
+      render: (viewing: Viewing) => (
+        <span className="text-gray-700">{viewing.landlordName}</span>
       ),
     },
     {
       key: "tenant",
       header: "Tenant",
-      render: (tour: Tour) => (
-        <span className="text-gray-600">{tour.tenant}</span>
+      render: (viewing: Viewing) => (
+        <span className="text-gray-600">{viewing.tenant}</span>
       ),
     },
     {
       key: "assignedAgent",
       header: "Assigned Agent",
-      render: (tour: Tour) => (
-        <span className="text-gray-600">{tour.assignedAgent}</span>
+      render: (viewing: Viewing) => (
+        <span className="text-gray-600">{viewing.assignedAgent}</span>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (tour: Tour) => (
+      render: (viewing: Viewing) => (
         <span
           className={`px-3 py-1 rounded text-xs font-medium ${
-            tour.status === "Completed"
+            viewing.status === "Completed"
               ? "bg-green-100 text-green-700"
-              : tour.status === "Pending Landlord"
+              : viewing.status === "Pending Landlord"
                 ? "bg-yellow-100 text-yellow-700"
-                : tour.status === "Scheduled"
+                : viewing.status === "Scheduled"
                   ? "bg-green-100 text-green-700"
                   : "bg-red-100 text-red-700"
           }`}
         >
-          {tour.status}
+          {viewing.status}
         </span>
       ),
     },
     {
       key: "action",
       header: "Action",
-      render: (tour: Tour) => (
+      render: (viewing: Viewing) => (
         <button className="text-gray-400 hover:text-gray-600">
           <MoreVertical className="w-5 h-5" />
         </button>
@@ -203,7 +197,7 @@ export function ToursManagement() {
   return (
     <div className="min-h-[80vh] flex flex-col w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Tour</h1>
+        <h1 className="text-2xl font-bold">Viewings</h1>
         <p className="text-sm text-gray-500 mt-2">
           Manage your landlord relationship and their relationship
         </p>
@@ -242,7 +236,7 @@ export function ToursManagement() {
       <div className="bg-white rounded-lg shadow p-6">
         <Table columns={columns} data={filteredData} />
         <Pagination
-          totalRows={256000}
+          totalRows={filteredData.length}
           rowsPerPage={8}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

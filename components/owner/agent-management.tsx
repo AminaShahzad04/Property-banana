@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
@@ -68,6 +68,11 @@ export function AgentManagement() {
     }
   };
 
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const filteredData = agents.filter((agent) => {
     const matchesSearch =
       agent.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -110,7 +115,7 @@ export function AgentManagement() {
     },
     {
       key: "noOfTours",
-      header: "No of Tours",
+      header: "No of Viewings",
       render: (agent: Agent) => (
         <span className="text-cyan-600 font-medium">{agent.noOfTours}</span>
       ),

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
-import Image from "next/image";
 import { MoreVertical } from "lucide-react";
 
 interface Approval {
@@ -95,6 +94,11 @@ export function ApprovalCenter() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const filteredData = mockApprovals.filter((approval) => {
     const matchesSearch =
       approval.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -124,25 +128,13 @@ export function ApprovalCenter() {
       key: "property",
       header: "Property",
       render: (approval: Approval) => (
-        <div className="flex items-center gap-3">
-          <Image
-            src={approval.propertyImage}
-            alt={approval.propertyTitle}
-            width={48}
-            height={48}
-            className="rounded-lg object-cover"
-            onError={(e) => {
-              e.currentTarget.src = "/house.png";
-            }}
-          />
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900">
-              {approval.propertyTitle}
-            </span>
-            <span className="text-xs text-gray-500">
-              {approval.propertyLocation}
-            </span>
-          </div>
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900">
+            {approval.propertyTitle}
+          </span>
+          <span className="text-xs text-gray-500">
+            {approval.propertyLocation}
+          </span>
         </div>
       ),
     },
@@ -192,7 +184,7 @@ export function ApprovalCenter() {
       <div className="bg-white rounded-lg shadow p-6">
         <Table columns={columns} data={filteredData} />
         <Pagination
-          totalRows={256000}
+          totalRows={filteredData.length}
           rowsPerPage={8}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

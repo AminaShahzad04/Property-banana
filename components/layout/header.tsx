@@ -73,50 +73,50 @@ export function Header() {
   }, [isAuthenticated]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b shadow-sm z-50">
-      <div className="flex items-center justify-between px-6 py-2">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      <div className="flex items-center justify-between px-8 pb-8">
         {/* Logo and Navigation */}
-        <div className="flex items-center gap-6 ml-32">
+        <div className="flex items-center gap-10 ml-32">
           {/* Logo */}
           <Image
             src="/PB_logo.png"
             alt="Property Banana"
-            width={60}
-            height={60}
+            width={90}
+            height={90}
             className="object-contain"
           />
 
           {/* Navigation */}
-          <nav className="flex gap-8 items-center">
+          <nav className="flex gap-10 items-center">
             <Link
               href="/"
-              className="text-sm font-medium text-black hover:text-gray-900"
+              className="text-base font-medium text-black hover:text-gray-900"
             >
               Home
             </Link>
             <Link
               href="/listings"
-              className="text-sm font-medium text-black hover:text-gray-900"
+              className="text-base font-medium text-black hover:text-gray-900"
             >
               Listings
             </Link>
             {isAuthenticated && dashboardUrl && (
               <Link
                 href={dashboardUrl}
-                className="text-sm font-medium text-black hover:text-gray-900"
+                className="text-base font-medium text-black hover:text-gray-900"
               >
                 Dashboard
               </Link>
             )}
             <Link
               href="/faqs"
-              className="text-sm font-medium text-black hover:text-gray-900"
+              className="text-base font-medium text-black hover:text-gray-900"
             >
               FAQs
             </Link>
             <Link
               href="/contact"
-              className="text-sm font-medium text-black hover:text-gray-900"
+              className="text-base font-medium text-black hover:text-gray-900"
             >
               Contact
             </Link>
@@ -127,7 +127,7 @@ export function Header() {
         {isAuthenticated ? (
           <button
             onClick={logout}
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mr-8"
+            className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-gray-900 mr-8"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +135,7 @@ export function Header() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="w-6 h-6"
             >
               <path
                 strokeLinecap="round"
@@ -148,7 +148,7 @@ export function Header() {
         ) : (
           <Link
             href="/sign-in"
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mr-8"
+            className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-gray-900 mr-8"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +156,7 @@ export function Header() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="w-6 h-6"
             >
               <path
                 strokeLinecap="round"

@@ -49,7 +49,7 @@ const agentMenuItems = [
 const agentManageListings = [
   { icon: House, label: "Properties", href: "/Dash/agent/properties" },
   { icon: Users, label: "Landlord", href: "/Dash/agent/landlord" },
-  { icon: Calendar, label: "Tours", href: "/Dash/agent/tours" },
+  { icon: Calendar, label: "Viewings", href: "/Dash/agent/tours" },
   { icon: KeyRound, label: "Lock Boxes", href: "/Dash/agent/lockboxes" },
   { icon: Gavel, label: "Bids", href: "/Dash/agent/bids" },
 ];
@@ -68,7 +68,7 @@ const managerManageListings = [
   { icon: CircleUser, label: "Agent", href: "/Dash/manager/agent" },
   { icon: Users, label: "Landlord", href: "/Dash/manager/landlord" },
   { icon: House, label: "Properties", href: "/Dash/manager/properties" },
-  { icon: Calendar, label: "Tours", href: "/Dash/manager/tours" },
+  { icon: Calendar, label: "Viewings", href: "/Dash/manager/viewings" },
   { icon: KeyRound, label: "Lock Boxes", href: "/Dash/manager/lockboxes" },
   { icon: Gavel, label: "Bids", href: "/Dash/manager/bids" },
   { icon: BarChart3, label: "BRN & Expiry", href: "/Dash/manager/brn-expiry" },
@@ -95,7 +95,7 @@ const ownerManageListings = [
   { icon: CircleUser, label: "Agent", href: "/Dash/owner/agent" },
   { icon: Users, label: "Landlord", href: "/Dash/owner/landlord" },
   { icon: House, label: "Properties", href: "/Dash/owner/properties" },
-  { icon: Calendar, label: "Tours", href: "/Dash/owner/tours" },
+  { icon: Calendar, label: "Viewings", href: "/Dash/owner/viewings" },
   { icon: KeyRound, label: "Lock Boxes", href: "/Dash/owner/lockboxes" },
   { icon: Gavel, label: "Bids", href: "/Dash/owner/bids" },
   { icon: BarChart3, label: "BRN & Expiry", href: "/Dash/owner/brn-expiry" },

@@ -113,7 +113,7 @@ export function ToursTable() {
       <div className="bg-gray-50 rounded-lg">
         <div>
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold">Tours</h1>
+            <h1 className="text-2xl font-bold">Viewings</h1>
             <div className="flex gap-6">
               <button
                 className={`px-12 py-3 border rounded-none text-base font-medium transition-colors duration-100
@@ -183,9 +183,9 @@ export function ToursTable() {
         <div className="bg-card rounded-lg p-6">
           {tours.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 mb-2">No tours found</p>
+              <p className="text-gray-500 mb-2">No viewings found</p>
               <p className="text-sm text-gray-400">
-                Tours will appear here once your landlord clients schedule them
+                Viewings will appear here once your landlord clients schedule them
               </p>
             </div>
           ) : (

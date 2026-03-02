@@ -8,60 +8,54 @@ import { WhatsAppButton } from "@/components/general-dashboard/whatsapp-button";
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen w-full">
+    <div className="relative min-h-screen w-full  ">
       {/* Header */}
+
       <Header />
 
       {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-start min-h-screen pl-46">
+      <div className="relative z-10 flex items-center justify-start min-h-screen pl-6">
         {/* Background Image */}
         <Image
-          src="/hero_background2.jpg"
+          src="/landingimage.png"
           alt="Hero Background"
           fill
           priority
-          className="object-cover -z-10"
+          className="-z-10"
           quality={100}
+          style={{
+            objectFit: "cover",
+            objectPosition: "right center",
+          }}
         />
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/20 -z-10"></div>
+        {/* Gradient Overlay */}
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(223, 207, 173, 0.8) 0%, rgba(223, 207, 173, 0) 50%)",
+          }}
+        ></div>
 
         <div className="max-w-4xl">
           <div className="flex flex-col items-start text-left">
             {/* Hero Text */}
             <h1
-              className="text-5xl md:text-6xl font-bold text-white mb-12"
+              className="text-5xl md:text-6xl font-bold mb-12 pl-28"
               style={{
-                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
+                color: "#000000",
               }}
             >
-              View Freely, Rent Smartly
+              Rent your
+              <br />
+              perfect home
             </h1>
 
             {/* Search Section */}
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-3xl pl-28">
               <SearchForm />
             </div>
           </div>
-        </div>
-
-        {/* Mascot */}
-        <div
-          className="absolute right-75 z-10 hidden lg:block"
-          style={{
-            top: "54%",
-            transform: "translateY(-50%)",
-            animation: "slideDown 1.5s ease-out",
-          }}
-        >
-          <img
-            src="/banana.png"
-            alt="Property Banana Mascot"
-            style={{
-              width: "210px",
-              height: "auto",
-            }}
-          />
         </div>
       </div>
 
