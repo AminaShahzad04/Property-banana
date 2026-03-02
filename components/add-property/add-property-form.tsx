@@ -123,16 +123,18 @@ export default function AddPropertyForm() {
         setIsSubmitting(true);
         // Step 1: Create listing with RERA permit
         const step1Response = await landlordService.createListingStep1({
-          rera_permit_no: permitNumber,
+          rera_number: permitNumber,
+          listing_type: "RENT",
         });
         const newListingId = step1Response.listing_id;
         setListingId(newListingId);
 
         // Step 2: Upload documents
-        await landlordService.createListingStep2(newListingId, {
-          titleDeed: titleDeedFile,
-          emirateId: titleDeedFile, // Using same file for now, update if separate emirateId file exists
-        });
+        await landlordService.createListingStep2(
+          newListingId,
+          titleDeedFile,
+          [], // Additional documents array (empty for now)
+        );
 
         setCurrentStep(currentStep + 1);
       } catch (error) {
@@ -146,11 +148,14 @@ export default function AddPropertyForm() {
       try {
         setIsSubmitting(true);
         await landlordService.createListingStep3(listingId, {
-          bedrooms: parseInt(bedroom) || 0,
-          bathrooms: parseInt(room) || 0,
-          area_sqft: parseFloat(propertySize) || 0,
+          beds: parseInt(bedroom) || 0,
+          baths: parseInt(room) || 0,
+          property_size: parseFloat(propertySize) || 0,
           property_type: validatedData?.propertyType || "Apartment",
           location: location,
+          parking_spaces: parseInt(parkingSpaces) || 0,
+          floor_number: parseInt(floorNo) || undefined,
+          unit_number: unitNo || undefined,
         });
         setCurrentStep(currentStep + 1);
       } catch (error) {
@@ -161,15 +166,31 @@ export default function AddPropertyForm() {
       }
     } else if (currentStep === 4 && !showImageValidation) {
       setShowImageValidation(true);
-    } else if (currentStep === 4 && showImageValidation) {
-      setShowImageValidation(false);
-      setCurrentStep(currentStep + 1);
+    } else if (currentStep === 4 && showImageValidation && listingId) {
+      // Step 4: Upload images
+      try {
+        setIsSubmitting(true);
+        if (titleImage && propertyImages.length > 0) {
+          await landlordService.createListingStep4(listingId, {
+            titleImage,
+            propertyImages,
+          });
+        }
+        setShowImageValidation(false);
+        setCurrentStep(currentStep + 1);
+      } catch (error) {
+        console.error("Failed to upload images:", error);
+        alert("Failed to upload images. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else if (currentStep === 5 && listingId) {
       // Step 5: Submit pricing
       try {
         setIsSubmitting(true);
         await landlordService.createListingStep5(listingId, {
-          price: parseFloat(rentAmount) || 0,
+          price_annual: parseFloat(rentAmount) || 0,
+          rent_frequency: (rentFrequency as "MONTHLY" | "QUARTERLY" | "YEARLY") || "YEARLY",
         });
         setCurrentStep(currentStep + 1);
       } catch (error) {
@@ -178,10 +199,28 @@ export default function AddPropertyForm() {
       } finally {
         setIsSubmitting(false);
       }
-    } else if (currentStep === 7 && listingId) {
-      // Final step: Publish listing
+    } else if (currentStep === 6 && listingId) {
+      // Step 6: Submit amenities
       try {
         setIsSubmitting(true);
+        // Convert amenities object to array of IDs (for now, just pass empty array)
+        // TODO: Map amenities to proper IDs from backend
+        const amenityIds: number[] = [];
+        await landlordService.createListingStep6(listingId, amenityIds);
+        setCurrentStep(currentStep + 1);
+      } catch (error) {
+        console.error("Failed to save amenities:", error);
+        alert("Failed to save amenities. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else if (currentStep === 7 && listingId) {
+      // Step 7: Submit description and then publish
+      try {
+        setIsSubmitting(true);
+        // Save description
+        await landlordService.createListingStep7(listingId, description);
+        // Publish listing
         await landlordService.publishListing(listingId);
         setShowSuccess(true);
       } catch (error) {
