@@ -199,13 +199,13 @@ export default function ListingsPage() {
                         `${listing.property_type} Property`
                       }
                       location={listing.location}
-                      price={listing.price.toLocaleString("en-US", {
+                      price={listing.price_annual.toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
-                      beds={listing.bedrooms}
-                      baths={listing.bathrooms}
-                      sqft={listing.area_sqft}
+                      beds={listing.beds}
+                      baths={listing.baths}
+                      sqft={listing.property_size}
                       type={listing.property_type}
                       image={listing.image || ""}
                       layout={viewMode}

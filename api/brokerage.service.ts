@@ -47,7 +47,7 @@ export const brokerageService = {
     formData.append("logo", data.logo);
 
     const response = await fetch(
-      `${API_BASE_URL}/api/dashboard/brokerage/create-brokerage`,
+      `${API_BASE_URL}/api/dashboard/manager/create-brokerage`,
       {
         method: "POST",
         credentials: "include",
@@ -83,7 +83,7 @@ export const brokerageService = {
     };
   }> {
     const response = await fetch(
-      `${API_BASE_URL}/api/dashboard/brokerage/create-manager`,
+      `${API_BASE_URL}/api/dashboard/manager/create-manager`,
       {
         method: "POST",
         headers: {
@@ -128,7 +128,7 @@ export const brokerageService = {
     };
   }> {
     const response = await fetch(
-      `${API_BASE_URL}/api/dashboard/brokerage/create-agent`,
+      `${API_BASE_URL}/api/dashboard/manager/create-agent`,
       {
         method: "POST",
         headers: {

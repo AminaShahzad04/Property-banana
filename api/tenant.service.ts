@@ -25,7 +25,7 @@ export interface Bid {
   landlord_user_id: number;
   amount: number;
   frequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
-  installments: 2 | 4 | 8 | 10 | 12;
+  installments: 2 | 4 | 6 | 8 | 10 | 12;
   status: "OPEN" | "COUNTER_OFFER" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
   tenant_offer_count?: number; // Number of offers made by tenant in this thread
   created_at: string;
@@ -36,11 +36,11 @@ export interface Listing {
   property_id: number;
   landlord_user_id: number;
   agent_user_id: number | null;
-  price: number;
-  status: "DRAFT" | "PENDING_VERIFICATION" | "ACTIVE" | "RENTED" | "INACTIVE";
-  bedrooms: number;
-  bathrooms: number;
-  area_sqft: number;
+  price_annual: number;
+  status: "DRAFT" | "PUBLISHED" | "INACTIVE";
+  beds: number;
+  baths: number;
+  property_size: number;
   property_type: string;
   location: string;
   description: string;
@@ -260,7 +260,7 @@ export const tenantService = {
     listing_id: number;
     amount: number;
     frequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
-    installments: 2 | 4 | 8 | 10 | 12;
+    installments: 2 | 4 | 6 | 8 | 10 | 12;
   }): Promise<{ success: boolean; bid: Bid }> {
     const response = await fetch(`${API_BASE_URL}/api/dashboard/tenant/bids`, {
       method: "POST",

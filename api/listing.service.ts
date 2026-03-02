@@ -8,11 +8,11 @@ export interface Listing {
   property_id: number;
   landlord_user_id: number;
   agent_user_id: number | null;
-  price: number;
-  status: "DRAFT" | "PENDING_VERIFICATION" | "ACTIVE" | "RENTED" | "INACTIVE";
-  bedrooms: number;
-  bathrooms: number;
-  area_sqft: number;
+  price_annual: number;
+  status: "DRAFT" | "PUBLISHED" | "INACTIVE";
+  beds: number;
+  baths: number;
+  property_size: number;
   property_type: string;
   location: string;
   description: string;

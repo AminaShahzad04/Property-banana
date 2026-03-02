@@ -6,28 +6,58 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { Pagination } from "@/components/ui/Pagination";
 import Image from "next/image";
 import { Table } from "@/components/ui/Table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { agentService, type Listing } from "@/api/agent.service";
 
 export function PropertiesTable() {
   const router = useRouter();
-  const properties: any[] = [];
+  const [properties, setProperties] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await agentService.searchListings();
+        setProperties(response.listings);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch properties",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+  const getStatusDisplay = (status: Listing["status"]) => {
+    const statusMap = {
+      DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-700" },
+      PUBLISHED: { label: "Published", color: "bg-green-100 text-green-700" },
+      INACTIVE: { label: "Inactive", color: "bg-red-100 text-red-700" },
+    };
+    return (
+      statusMap[status] || { label: status, color: "bg-gray-100 text-gray-700" }
+    );
+  };
+
   const columns = [
     {
       key: "property",
       header: "Property",
-      render: (row: any) => (
+      render: (row: Listing) => (
         <div className="flex items-center gap-3">
-          <Image
-            src={row.image}
-            alt={row.name}
-            width={60}
-            height={60}
-            className="rounded-lg object-cover"
-          />
+          <div className="w-[60px] h-[60px] bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400">
+            No Image
+          </div>
           <div>
-            <div className="font-semibold text-sm">{row.name}</div>
-            <div className="text-xs text-gray-500">{row.location}</div>
+            <div className="font-semibold text-sm">
+              {row.property_type || "Property"}
+            </div>
+            <div className="text-xs text-gray-500">{row.location || "N/A"}</div>
           </div>
         </div>
       ),
@@ -36,39 +66,51 @@ export function PropertiesTable() {
     {
       key: "type",
       header: "Type",
+      render: (row: Listing) => (
+        <span className="font-semibold text-sm">{row.listing_type}</span>
+      ),
       className: "px-6 py-4 font-semibold text-sm",
     },
     {
       key: "price",
       header: "Price",
+      render: (row: Listing) => (
+        <span className="font-semibold text-sm">
+          AED {row.price_annual?.toLocaleString() || "0"}
+        </span>
+      ),
       className: "px-6 py-4 font-semibold text-sm",
     },
     {
       key: "status",
       header: "Status",
-      render: (row: any) => (
-        <span
-          className={`inline-block px-3 py-1 rounded-none text-xs font-semibold ${row.statusColor}`}
-        >
-          {row.status}
-        </span>
-      ),
+      render: (row: Listing) => {
+        const statusDisplay = getStatusDisplay(row.status);
+        return (
+          <span
+            className={`inline-block px-3 py-1 rounded-none text-xs font-semibold ${statusDisplay.color}`}
+          >
+            {statusDisplay.label}
+          </span>
+        );
+      },
       className: "px-6 py-4",
     },
     {
       key: "lastUpdated",
       header: "Last Updated",
+      render: (row: Listing) => (
+        <span className="text-gray-500 text-sm">
+          {new Date(row.created_at).toLocaleDateString()}
+        </span>
+      ),
       className: "px-6 py-4 text-gray-500 text-sm",
     },
     {
       key: "pendingChanges",
       header: "Pending changes",
-      render: (row: any) => (
-        <span
-          className={`font-semibold ${row.pendingChanges === "Yes" ? "text-red-600" : "text-black"}`}
-        >
-          {row.pendingChanges}
-        </span>
+      render: (row: Listing) => (
+        <span className="font-semibold text-black">No</span>
       ),
       className: "px-6 py-4 text-sm",
     },
@@ -91,32 +133,50 @@ export function PropertiesTable() {
   const [sortOrder, setSortOrder] = useState("Newest First");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
-  const tableData = properties.map((p) => ({
-    ...p,
-    property: p.name,
-    action: "",
-  }));
-  let filteredData = tableData.filter(
+
+  let filteredData = properties.filter(
     (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.location.toLowerCase().includes(search.toLowerCase()) ||
-      p.type.toLowerCase().includes(search.toLowerCase()),
+      (p.property_type?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (p.location?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      p.listing_type.toLowerCase().includes(search.toLowerCase()),
   );
   if (status !== "All Statuses") {
     filteredData = filteredData.filter((p) => p.status === status);
   }
   if (type !== "All Types") {
-    filteredData = filteredData.filter((p) => p.type === type);
+    filteredData = filteredData.filter((p) => p.listing_type === type);
   }
   if (sortOrder === "Newest First") {
-    filteredData = filteredData.sort((a, b) => b.id - a.id);
+    filteredData = filteredData.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
   } else {
-    filteredData = filteredData.sort((a, b) => a.id - b.id);
+    filteredData = filteredData.sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
   }
   const paginatedData = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-sm text-red-800">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-40 rounded-lg">
@@ -192,7 +252,7 @@ export function PropertiesTable() {
         {/* Table */}
         <Table columns={columns} data={paginatedData} />
         <Pagination
-          totalRows={tableData.length}
+          totalRows={filteredData.length}
           rowsPerPage={rowsPerPage}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

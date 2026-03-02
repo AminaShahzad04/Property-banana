@@ -1,23 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { QuickAction } from "@/components/dashboard/quick-action";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { Card } from "@/components/ui/card";
 import { userService } from "@/api/user.service";
+import { agentService } from "@/api/agent.service";
+import Image from "next/image";
+
+const mockActivities = [
+  {
+    id: 1,
+    type: "Bid approved",
+    description:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+    image: "/places/image1.jpg",
+  },
+  {
+    id: 2,
+    type: "Review completed",
+    description:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+    image: "/places/image2.jpg",
+  },
+  {
+    id: 3,
+    type: "House tour completed",
+    description:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+    image: "/places/image3.jpg",
+  },
+  {
+    id: 4,
+    type: "Review completed",
+    description:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+    image: "/places/image4.jpg",
+  },
+];
 
 export default function AgentDashboardPage() {
   const [userData, setUserData] = useState<any>(null);
+  const [performance, setPerformance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("🔍 [AGENT DASHBOARD] Fetching user profile...");
-        const profile = await userService.getMyProfile();
-        console.log("✅ [AGENT DASHBOARD] Profile data:", profile);
+        const [profile, performanceData] = await Promise.all([
+          userService.getMyProfile(),
+          agentService.getPerformance().catch(() => null),
+        ]);
         setUserData(profile);
+        setPerformance(performanceData);
       } catch (error) {
-        console.error("❌ [AGENT DASHBOARD] Failed to fetch profile:", error);
+        console.error("Failed to fetch agent data:", error);
       } finally {
         setLoading(false);
       }
@@ -26,109 +62,79 @@ export default function AgentDashboardPage() {
     fetchData();
   }, []);
 
+  const stats = [
+    {
+      image: "/house.png",
+      label: "Active property",
+      value: performance?.activeListings?.toString() || "20",
+    },
+    {
+      image: "/Analysis.png",
+      label: "Pending approval",
+      value: "10",
+    },
+    {
+      image: "/rating.png",
+      label: "Viewing schedule",
+      value: performance?.totalTours?.toString() || "5",
+    },
+    {
+      image: "/favourite.png",
+      label: "Open bids",
+      value: performance?.totalBids?.toString() || "04",
+    },
+  ];
+
   return (
     <>
       <div className="mb-8 p-2">
-        <h1 className="text-3xl font-bold">Agent Dashboard</h1>
-        <p className="text-muted-foreground pt-2">
-          Welcome {loading ? "..." : userData?.user?.full_name || "Agent"}!
-        </p>
+        <h1 className="text-3xl font-bold">Agent dashboard</h1>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent"></div>
         </div>
-      ) : userData ? (
+      ) : (
         <>
-          {/* Agent Profile Card */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Your Profile</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600">Name</p>
-                <p className="font-medium">
-                  {userData.user?.full_name || "N/A"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="font-medium">{userData.user?.email || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Phone</p>
-                <p className="font-medium">
-                  {userData.user?.phone_no || "N/A"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Role</p>
-                <p className="font-medium">
-                  {userData.roles && userData.roles.length > 0
-                    ? userData.roles[0].role_name
-                    : "Agent"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Status</p>
-                <p className="font-medium capitalize">
-                  {userData.user?.status || "Active"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Member Since</p>
-                <p className="font-medium">
-                  {userData.user?.created_at
-                    ? new Date(userData.user.created_at).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-            </div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            {stats.map((stat) => (
+              <StatCard key={stat.label} {...stat} />
+            ))}
           </div>
 
-          {/* Info Message */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-blue-600 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-800 mb-1">
-                  Welcome to Your Agent Dashboard
-                </p>
-                <p className="text-xs text-blue-700">
-                  To access full agent features like property management,
-                  performance metrics, and client management, please complete
-                  your brokerage registration or contact your brokerage
-                  administrator.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 mb-8">
-            <QuickAction />
-          </div>
-
+          {/* Recent Activities */}
           <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
-            <ActivityFeed />
+            <h2 className="text-xl font-bold mb-4">Recent activities</h2>
+            <Card className="p-6">
+              <div className="space-y-4">
+                {mockActivities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex gap-3 pb-4 border-b last:border-b-0 last:pb-0"
+                  >
+                    <Image
+                      src={activity.image}
+                      alt={activity.type}
+                      width={80}
+                      height={80}
+                      className="rounded-lg object-cover flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm mb-1">
+                        {activity.type}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </>
-      ) : (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-800">
-            Unable to load profile data. Please try refreshing the page.
-          </p>
-        </div>
       )}
     </>
   );

@@ -119,20 +119,20 @@ export default function BookTourPage() {
           price:
             typeof (data as any).price_annual === "string"
               ? `AED ${parseFloat((data as any).price_annual).toLocaleString()} Yearly`
-              : typeof data.price === "number"
-                ? `AED ${data.price.toLocaleString()} Yearly`
+              : typeof data.price_annual === "number"
+                ? `AED ${data.price_annual.toLocaleString()} Yearly`
                 : "AED 0 Yearly",
           rating: (data as any).rating || data.rating || 0,
           reviews: (data as any).reviews || data.reviews || 0,
           images: (data as any).images || (data.image ? [data.image] : []),
-          bedrooms: (data as any).bedrooms || data.bedrooms || 0,
-          beds: (data as any).beds || data.bedrooms || 0,
-          bathrooms: (data as any).bathrooms || data.bathrooms || 0,
+          bedrooms: (data as any).bedrooms || data.beds || 0,
+          beds: (data as any).beds || data.beds || 0,
+          bathrooms: (data as any).bathrooms || data.baths || 0,
           sqft:
             typeof (data as any).property_size === "string"
               ? `${parseFloat((data as any).property_size)} sqft`
-              : typeof data.area_sqft === "number"
-                ? `${data.area_sqft} sqft`
+              : typeof data.property_size === "number"
+                ? `${data.property_size} sqft`
                 : "0 sqft",
           propertyType: (data as any).name || data.property_type || "",
           description:
