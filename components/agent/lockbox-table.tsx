@@ -5,7 +5,6 @@ import { Table as ReusableTable } from "@/components/ui/Table";
 import { MoreVertical } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
-import Image from "next/image";
 
 export function LockBoxTable() {
   const lockBoxes: any[] = []; // Empty - agent lockboxes come from landlord clients
@@ -21,27 +20,12 @@ export function LockBoxTable() {
       key: "property",
       header: "Property",
       render: (row: any) => (
-        <div className="flex items-center gap-2">
-          {row.property?.image ? (
-            <Image
-              src={row.property.image}
-              alt="property"
-              width={40}
-              height={40}
-              className="rounded"
-            />
-          ) : (
-            <div className="w-[40px] h-[40px] rounded bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
-              N/A
-            </div>
-          )}
-          <div>
-            <div className="font-semibold text-sm">
-              {row.property?.name || "N/A"}
-            </div>
-            <div className="text-xs text-gray-500">
-              {row.property?.location || "N/A"}
-            </div>
+        <div className="flex flex-col">
+          <div className="font-semibold text-sm">
+            {row.property?.name || "N/A"}
+          </div>
+          <div className="text-xs text-gray-500">
+            {row.property?.location || "N/A"}
           </div>
         </div>
       ),

@@ -5,7 +5,6 @@ import { Table as ReusableTable } from "@/components/ui/Table";
 import { MoreVertical } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
-import Image from "next/image";
 import { agentService, type Bid } from "@/api/agent.service";
 
 export function BidsTable() {

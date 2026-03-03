@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/Button";
 import { MoreVertical, Search } from "lucide-react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Pagination } from "@/components/ui/Pagination";
-import Image from "next/image";
 import { Table } from "@/components/ui/Table";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

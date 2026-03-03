@@ -6,7 +6,6 @@ import { Search } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Table } from "@/components/ui/Table";
-import Image from "next/image";
 
 export function ToursTable() {
   const tours: any[] = []; // Empty - agent tours come from landlord clients
@@ -36,18 +35,9 @@ export function ToursTable() {
       key: "property",
       header: "Property",
       render: (row: any) => (
-        <div className="flex items-center gap-2">
-          <Image
-            src={row.property.image}
-            alt="property"
-            width={40}
-            height={40}
-            className="rounded"
-          />
-          <div>
-            <div className="font-semibold text-sm">{row.property.name}</div>
-            <div className="text-xs text-gray-500">{row.property.location}</div>
-          </div>
+        <div className="flex flex-col">
+          <div className="font-semibold text-sm">{row.property.name}</div>
+          <div className="text-xs text-gray-500">{row.property.location}</div>
         </div>
       ),
       className: "px-6 py-4",
@@ -185,7 +175,8 @@ export function ToursTable() {
             <div className="text-center py-12">
               <p className="text-gray-500 mb-2">No viewings found</p>
               <p className="text-sm text-gray-400">
-                Viewings will appear here once your landlord clients schedule them
+                Viewings will appear here once your landlord clients schedule
+                them
               </p>
             </div>
           ) : (
