@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Select } from "@/components/ui/Select";
 import { Eye, EyeOff } from "lucide-react";
 import { uaePassService } from "@/api/uaepass.service";
 import { authService, type UserType } from "@/api/auth.service";
@@ -35,7 +34,7 @@ function SignUpFormContent() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserType>("Tenant");
+  const [selectedRole, setSelectedRole] = useState<UserType | "">("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -77,13 +76,19 @@ function SignUpFormContent() {
       return;
     }
 
+    if (!selectedRole) {
+      setError("Please select a user type.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await authService.register({
         fullName,
         email,
         password,
         phoneNumber: phoneNumber.trim(),
-        userType: selectedRole,
+        userType: selectedRole as UserType,
       });
 
       window.location.href =
@@ -193,10 +198,13 @@ function SignUpFormContent() {
           <select
             id="role"
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value as UserType)}
+            onChange={(e) => setSelectedRole(e.target.value as UserType | "")}
             disabled={loading}
             className="w-full border border-gray-300 px-4 py-3 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
           >
+            <option value="" disabled>
+              Select user type
+            </option>
             {roles.map((role) => (
               <option key={role.value} value={role.value}>
                 {role.label}
