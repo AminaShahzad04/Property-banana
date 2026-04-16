@@ -5,6 +5,7 @@ import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
+import { AddLandlordModal } from "@/components/dashboard/AddLandlordModal";
 
 interface LandlordBase {
   id: string;
@@ -173,9 +174,15 @@ export function LandlordManagement({ role }: LandlordManagementProps) {
   const [portfolioFilter, setPortfolioFilter] = useState(
     role === "owner" ? "High value portfolio" : "high",
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const mockLandlords =
     role === "owner" ? mockOwnerLandlords : mockManagerLandlords;
+
+  const handleAddSuccess = () => {
+    // Refresh the landlord list when backend API is available
+    // For now, user would need to manually refresh
+  };
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -301,14 +308,28 @@ export function LandlordManagement({ role }: LandlordManagementProps) {
 
   return (
     <div className="min-h-[80vh] flex flex-col w-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Landlord</h1>
-        <p className="text-gray-500 text-sm">
-          {role === "owner"
-            ? "Manage property landlords"
-            : "Manage your landlord relationship and their relationship"}
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Landlord</h1>
+          <p className="text-gray-500 text-sm mt-2">
+            {role === "owner"
+              ? "Manage property landlords"
+              : "Manage your landlord relationship and their relationship"}
+          </p>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-sm flex items-center gap-2"
+        >
+          + Add Landlord
+        </button>
       </div>
+
+      <AddLandlordModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <SearchBar

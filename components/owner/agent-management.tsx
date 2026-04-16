@@ -5,7 +5,7 @@ import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
-import { brokerageService } from "@/api/brokerage.service";
+import { AddAgentModal } from "@/components/dashboard/AddAgentModal";
 
 interface Agent {
   id: string;
@@ -47,25 +47,11 @@ export function AgentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [agents] = useState<Agent[]>(mockAgents);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddAgent = async () => {
-    // This would open a modal/form to collect agent details
-    // For now, showing the API structure
-    const agentData = {
-      fullName: "Agent Name",
-      email: "agent@example.com",
-      phoneNumber: "+971501234567",
-      licenseNumber: "BRN123456",
-    };
-
-    try {
-      await brokerageService.createAgent(agentData);
-      alert("Agent created successfully!");
-      // Note: No endpoint to refresh agent list, would need to manually update state
-    } catch (error) {
-      console.error("Failed to create agent:", error);
-      alert("Failed to create agent. Please try again.");
-    }
+  const handleAddSuccess = () => {
+    // Refresh the agent list when new agent is added
+    // For now, user would need to manually refresh
   };
 
   // Reset to page 1 when search term changes
@@ -163,12 +149,18 @@ export function AgentManagement() {
           </p>
         </div>
         <button
-          onClick={handleAddAgent}
-          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-sm flex items-center gap-2"
         >
           + Add Agent
         </button>
       </div>
+
+      <AddAgentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <SearchBar

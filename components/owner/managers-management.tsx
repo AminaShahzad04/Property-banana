@@ -5,7 +5,7 @@ import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
-import { brokerageService } from "@/api/brokerage.service";
+import { AddManagerModal } from "@/components/dashboard/AddManagerModal";
 
 interface Manager {
   id: string;
@@ -47,24 +47,11 @@ export function ManagersManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [managers] = useState<Manager[]>(mockManagers);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddManager = async () => {
-    // This would open a modal/form to collect manager details
-    // For now, showing the API structure
-    const managerData = {
-      fullName: "Manager Name",
-      email: "manager@example.com",
-      phoneNumber: "+971501234567",
-    };
-
-    try {
-      await brokerageService.createManager(managerData);
-      alert("Manager created successfully!");
-      // Note: No endpoint to refresh manager list, would need to manually update state
-    } catch (error) {
-      console.error("Failed to create manager:", error);
-      alert("Failed to create manager. Please try again.");
-    }
+  const handleAddSuccess = () => {
+    // Refresh the manager list when new manager is added
+    // For now, user would need to manually refresh
   };
 
   // Reset to page 1 when search term changes
@@ -156,12 +143,18 @@ export function ManagersManagement() {
           <p className="text-gray-500 text-sm">Manage your brokerage manager</p>
         </div>
         <button
-          onClick={handleAddManager}
-          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-sm flex items-center gap-2"
         >
           + Add Manager
         </button>
       </div>
+
+      <AddManagerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <SearchBar

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { MoreVertical } from "lucide-react";
+import { AddAgentModal } from "@/components/dashboard/AddAgentModal";
 
 interface Agent {
   id: string;
@@ -86,6 +86,12 @@ const mockAgents: Agent[] = [
 export function AgentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAddSuccess = () => {
+    // Refresh the agent list when new agent is added
+    // For now, user would need to manually refresh
+  };
 
   // Reset to page 1 when search term changes
   useEffect(() => {
@@ -173,10 +179,19 @@ export function AgentManagement() {
             Manage your brokerage agents
           </p>
         </div>
-        <Button className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#FBDE02] hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-sm flex items-center gap-2"
+        >
           + Add Agent
-        </Button>
+        </button>
       </div>
+
+      <AddAgentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
 
       <div className="mb-6">
         <SearchBar

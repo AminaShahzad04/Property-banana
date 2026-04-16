@@ -11,6 +11,16 @@ import { Eye, EyeOff } from "lucide-react";
 import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 import { UAEPassLoginModal } from "@/components/auth/UAEPassLoginModal";
 import { uaePassService } from "@/api/uaepass.service";
+import { authService } from "@/api/auth.service";
+
+const DASHBOARD_BY_USER_TYPE: Record<string, string> = {
+  Tenant: "/Dash/tenant",
+  Landlord: "/Dash/landlord",
+  Agent: "/Dash/agent",
+  Manager: "/Dash/manager",
+  Owner: "/Dash/owner",
+  Admin: "/Dash/admin",
+};
 
 export function SignInForm() {
   const [email, setEmail] = useState("");
@@ -28,9 +38,15 @@ export function SignInForm() {
     e.preventDefault();
     setLoading(true);
 
-    // Redirect to Cognito Hosted UI for authentication
-    // The callback will handle role-based routing
-    window.location.href = `${API_BASE_URL}/api/cognito/login`;
+    try {
+      const result = await authService.login({ email, password });
+      const redirectPath =
+        DASHBOARD_BY_USER_TYPE[result.user.user_type] || "/Dash";
+      window.location.href = redirectPath;
+    } catch (error) {
+      console.error("Sign in failed:", error);
+      setLoading(false);
+    }
   };
 
   const handleUAEPassLogin = () => {

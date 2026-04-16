@@ -10,19 +10,32 @@ import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
 import { Eye, EyeOff } from "lucide-react";
 import { uaePassService } from "@/api/uaepass.service";
+import { authService, type UserType } from "@/api/auth.service";
 
 const roles = [
-  { id: 1, name: "Landlord" },
-  { id: 2, name: "Tenant" },
-  { id: 3, name: "Agent" },
-  { id: 5, name: "Brokerage Owner" },
+  { value: "Tenant", label: "Tenant" },
+  { value: "Landlord", label: "Landlord" },
+  { value: "Agent", label: "Agent" },
+  { value: "Manager", label: "Manager" },
+  { value: "Owner", label: "Owner" },
+  { value: "Admin", label: "Admin" },
 ];
+
+const DASHBOARD_BY_USER_TYPE: Record<UserType, string> = {
+  Tenant: "/Dash/tenant",
+  Landlord: "/Dash/landlord",
+  Agent: "/Dash/agent",
+  Manager: "/Dash/manager",
+  Owner: "/Dash/owner",
+  Admin: "/Dash/admin",
+};
 
 function SignUpFormContent() {
   const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [selectedRole, setSelectedRole] = useState<string>("2"); // Default to Tenant
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedRole, setSelectedRole] = useState<UserType>("Tenant");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,18 +61,41 @@ function SignUpFormContent() {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-  const handleCognitoSignUp = () => {
+  const handleRegister = async () => {
     setLoading(true);
     setError(null);
 
-    // Save selected role to localStorage before redirecting
-    // The callback will use this to assign the role after authentication
-    localStorage.setItem("pendingRoleId", selectedRole);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
 
-    // Redirect to Cognito Hosted UI for signup
-    // Backend will redirect to Cognito, which handles sign up
-    // After authentication, user will be assigned the selected role
-    window.location.href = `${API_BASE_URL}/api/cognito/login`;
+    if (!phoneNumber.trim()) {
+      setError("Phone number is required.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const result = await authService.register({
+        fullName,
+        email,
+        password,
+        phoneNumber: phoneNumber.trim(),
+        userType: selectedRole,
+      });
+
+      window.location.href =
+        DASHBOARD_BY_USER_TYPE[result.user.user_type] || "/Dash";
+    } catch (signupError) {
+      setError(
+        signupError instanceof Error
+          ? signupError.message
+          : "An error occurred during signup. Please try again.",
+      );
+      setLoading(false);
+    }
   };
 
   const handleUAEPassSignUp = () => {
@@ -78,7 +114,7 @@ function SignUpFormContent() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleCognitoSignUp();
+          handleRegister();
         }}
         className="space-y-5"
       >
@@ -127,6 +163,25 @@ function SignUpFormContent() {
           />
         </div>
 
+        {/* Phone Number Field */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="phoneNumber"
+            className="text-sm pl-4 font-medium text-gray-900"
+          >
+            Phone Number<span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="phoneNumber"
+            type="tel"
+            placeholder="+971501234567"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            disabled={loading}
+            className="w-full border-gray-300 px-4 py-3 rounded-md"
+          />
+        </div>
+
         {/* Role Selection Dropdown */}
         <div className="space-y-2">
           <Label
@@ -138,13 +193,13 @@ function SignUpFormContent() {
           <select
             id="role"
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
+            onChange={(e) => setSelectedRole(e.target.value as UserType)}
             disabled={loading}
             className="w-full border border-gray-300 px-4 py-3 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
           >
             {roles.map((role) => (
-              <option key={role.id} value={role.id.toString()}>
-                {role.name}
+              <option key={role.value} value={role.value}>
+                {role.label}
               </option>
             ))}
           </select>

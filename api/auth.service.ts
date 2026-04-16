@@ -2,6 +2,136 @@ import type { User } from "@/types";
 
 // AWS Cognito Auth Backend URL - No /api prefix for auth endpoints
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const ACCESS_TOKEN_STORAGE_KEY = "accessToken";
+const REFRESH_TOKEN_STORAGE_KEY = "refreshToken";
+
+export type UserType =
+  | "Tenant"
+  | "Landlord"
+  | "Agent"
+  | "Manager"
+  | "Owner"
+  | "Admin";
+
+interface AuthUserDto {
+  user_id: string;
+  email: string;
+  full_name: string;
+  user_type: UserType;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+interface ApiErrorResponse {
+  success: false;
+  message: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  userType: UserType;
+}
+
+export interface RegisterResponseData {
+  user: AuthUserDto;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponseData {
+  user: AuthUserDto;
+  accessToken: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponseData {
+  accessToken: string;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface EmailOnlyRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface SendPhoneOtpRequest {
+  phoneNo: string;
+}
+
+export interface SendPhoneOtpResponseData {
+  code: string;
+}
+
+export interface VerifyPhoneOtpRequest {
+  phoneNo: string;
+  code: string;
+}
+
+export interface ChangePasswordJwtRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+interface LogoutRequest {
+  refreshToken: string;
+}
+
+function getStoredToken(key: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return localStorage.getItem(key);
+}
+
+function setStoredToken(key: string, value: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(key, value);
+  }
+}
+
+function removeStoredToken(key: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(key);
+  }
+}
+
+async function parseError(response: Response): Promise<never> {
+  const fallback = "Request failed";
+  try {
+    const payload = (await response.json()) as ApiErrorResponse;
+    throw new Error(payload.message || response.statusText || fallback);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    // If response body is not JSON, return a generic error.
+    throw new Error(response.statusText || fallback);
+  }
+}
 
 interface AuthStatusResponse {
   isAuthenticated: boolean;
@@ -14,6 +144,278 @@ interface ProfileResponse {
 }
 
 export const authService = {
+  /**
+   * Register a new user with email/password.
+   */
+  async register(payload: RegisterRequest): Promise<RegisterResponseData> {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<RegisterResponseData>;
+    setStoredToken(ACCESS_TOKEN_STORAGE_KEY, result.data.accessToken);
+    setStoredToken(REFRESH_TOKEN_STORAGE_KEY, result.data.refreshToken);
+    return result.data;
+  },
+
+  /**
+   * Login and return an access token.
+   */
+  async login(payload: LoginRequest): Promise<LoginResponseData> {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<LoginResponseData>;
+    setStoredToken(ACCESS_TOKEN_STORAGE_KEY, result.data.accessToken);
+    return result.data;
+  },
+
+  /**
+   * Exchange a refresh token for a new access token.
+   */
+  async refreshAccessToken(
+    payload?: Partial<RefreshTokenRequest>,
+  ): Promise<RefreshTokenResponseData> {
+    const refreshToken =
+      payload?.refreshToken || getStoredToken(REFRESH_TOKEN_STORAGE_KEY);
+
+    const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result =
+      (await response.json()) as ApiResponse<RefreshTokenResponseData>;
+    setStoredToken(ACCESS_TOKEN_STORAGE_KEY, result.data.accessToken);
+    return result.data;
+  },
+
+  /**
+   * Logout and invalidate refresh token.
+   */
+  async logoutJwt(payload?: Partial<LogoutRequest>): Promise<string> {
+    const refreshToken =
+      payload?.refreshToken || getStoredToken(REFRESH_TOKEN_STORAGE_KEY) || "";
+
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    removeStoredToken(ACCESS_TOKEN_STORAGE_KEY);
+    removeStoredToken(REFRESH_TOKEN_STORAGE_KEY);
+    return result.data;
+  },
+
+  /**
+   * Verify email using token from query string.
+   */
+  async verifyEmail(token: string): Promise<string> {
+    const encodedToken = encodeURIComponent(token);
+    const response = await fetch(
+      `${API_BASE_URL}/auth/verify-email?token=${encodedToken}`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Verify email using token in request body.
+   */
+  async verifyEmailWithBody(payload: VerifyEmailRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Resend email verification link.
+   */
+  async resendVerification(payload: EmailOnlyRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Send password reset email.
+   */
+  async requestPasswordReset(payload: EmailOnlyRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Reset password using reset token.
+   */
+  async resetPasswordWithToken(payload: ResetPasswordRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Send phone OTP (authenticated).
+   */
+  async sendPhoneOtp(
+    payload: SendPhoneOtpRequest,
+  ): Promise<SendPhoneOtpResponseData> {
+    const response = await fetch(`${API_BASE_URL}/auth/phone/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getStoredToken(ACCESS_TOKEN_STORAGE_KEY) || ""}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result =
+      (await response.json()) as ApiResponse<SendPhoneOtpResponseData>;
+    return result.data;
+  },
+
+  /**
+   * Verify phone OTP (authenticated).
+   */
+  async verifyPhoneOtp(payload: VerifyPhoneOtpRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/phone/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getStoredToken(ACCESS_TOKEN_STORAGE_KEY) || ""}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  /**
+   * Change password (authenticated).
+   */
+  async changePasswordJwt(payload: ChangePasswordJwtRequest): Promise<string> {
+    const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getStoredToken(ACCESS_TOKEN_STORAGE_KEY) || ""}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const result = (await response.json()) as ApiResponse<string>;
+    return result.data;
+  },
+
+  getAccessToken(): string | null {
+    return getStoredToken(ACCESS_TOKEN_STORAGE_KEY);
+  },
+
   /**
    * Redirect to AWS Cognito login page
    * No need to call this as a fetch - use window.location.href
